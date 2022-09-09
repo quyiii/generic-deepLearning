@@ -8,11 +8,11 @@ _C = CN()
 _C.MODEL = CN()
 _C.MODEL.NAME = ''
 _C.MODEL.DEVICE = 'cuda'
-_C.MODEL.DEVICE_IDS = '0'
+_C.MODEL.DEVICE_IDS = [0]
 _C.MODEL.SEED = 1
 _C.MODEL.PRETRAINED = False
 _C.MODEL.PRETRAIN_PATH = ''
-_C.MODEL.METRIC_LOSS_TYPE = ''
+_C.MODEL.LOSS = ''
 _C.MODEL.DROPOUT = 0.5
 
 # -----------------------------------------------------------
@@ -29,13 +29,14 @@ _C.INPUT.MODALITY = 'RGB'
 # -----------------------------------------------------------
 _C.DATASET = CN()
 _C.DATASET.NAME = ''
+_C.DATASET.TYPE = ''
 _C.DATASET.ROOT_DIR = ''
 
 # -----------------------------------------------------------
 # DATALOADER
 # -----------------------------------------------------------
 _C.DATALOADER = CN()
-_C.DATALOADER.NUM_WORKERS = 0
+_C.DATALOADER.NUM_WORKERS = 8
 _C.DATALOADER.BATCH_SIZE = 128
 
 # -----------------------------------------------------------
