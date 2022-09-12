@@ -27,6 +27,9 @@ SOLVER:
   OPTIMIZER_NAME: "Adam"
   LR_SCHEDULER: 'linear'
 
+TRAIN:
+  IS_TRAIN: True
+
 TEST:
   BATCH_SIZE: 128
   WEIGHT: ""
