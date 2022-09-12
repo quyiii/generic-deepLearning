@@ -13,7 +13,7 @@ def get_dataset_by_name(dataset_type, dataset_name):
             dataset = cls
             break
     if dataset is None:
-        raise NotImplementError("no {}.py in lib/data".formate(target_dataset_type))
+        raise NotImplementError("no {}.py in lib/data".format(target_dataset_type))
     return dataset
 
 

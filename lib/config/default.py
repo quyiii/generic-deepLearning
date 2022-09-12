@@ -19,10 +19,34 @@ _C.MODEL.DROPOUT = 0.5
 # INPUT
 # -----------------------------------------------------------
 _C.INPUT = CN()
+_C.INPUT.TYPE = 'image'
+_C.INPUT.CHANNEL = 3
 _C.INPUT.SIZE = [224, 224]
+_C.INPUT.GRAY_MEAN = [0.5]
+_C.INPUT.GRAY_STD = [0.5]
 _C.INPUT.MEAN = [0.485, 0.456, 0.406]
 _C.INPUT.STD = [0.229, 0.224, 0.225]
 _C.INPUT.MODALITY = 'RGB'
+
+# -----------------------------------------------------------
+# PROCESS
+# -----------------------------------------------------------
+_C.PROCESS = CN()
+_C.PROCESS.GRAYSCALE = False
+_C.PROCESS.RESIZE = True
+_C.PROCESS.CROP = True
+_C.PROCESS.CROP_SIZE = None
+_C.PROCESS.FLIP = False
+_C.PROCESS.FLIP_P = None
+_C.PROCESS.TOTENSOR = True
+
+# -----------------------------------------------------------
+# OUTPUT
+# -----------------------------------------------------------
+_C.OUTPUT = CN()
+_C.OUTPUT.TYPE = 'image'
+_C.OUTPUT.CHANNEL = 3
+_C.OUTPUT.SIZE = [224, 224]
 
 # -----------------------------------------------------------
 # DATASET
@@ -31,6 +55,8 @@ _C.DATASET = CN()
 _C.DATASET.NAME = ''
 _C.DATASET.TYPE = ''
 _C.DATASET.ROOT_DIR = ''
+_C.DATASET.MAX_SIZE = float('inf')
+_C.DATASET.DIRECTION = True
 
 # -----------------------------------------------------------
 # DATALOADER
