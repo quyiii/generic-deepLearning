@@ -32,12 +32,11 @@ _C.INPUT.MODALITY = 'RGB'
 # PROCESS
 # -----------------------------------------------------------
 _C.PROCESS = CN()
-_C.PROCESS.GRAYSCALE = False
 _C.PROCESS.RESIZE = True
 _C.PROCESS.CROP = True
-_C.PROCESS.CROP_SIZE = None
-_C.PROCESS.FLIP = False
-_C.PROCESS.FLIP_P = None
+_C.PROCESS.CROP_SIZE = [256, 256]
+_C.PROCESS.FLIP = True
+_C.PROCESS.FLIP_P = 0.5
 _C.PROCESS.TOTENSOR = True
 
 # -----------------------------------------------------------
@@ -55,7 +54,7 @@ _C.DATASET = CN()
 _C.DATASET.NAME = ''
 _C.DATASET.TYPE = ''
 _C.DATASET.ROOT_DIR = ''
-_C.DATASET.MAX_SIZE = float('inf')
+_C.DATASET.MAX_SIZE = 'inf'
 _C.DATASET.DIRECTION = True
 
 # -----------------------------------------------------------

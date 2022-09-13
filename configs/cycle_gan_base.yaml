@@ -19,12 +19,11 @@ INPUT:
   MODALITY: 'RGB'
 
 PROCESS:
-  GRAYSCALE: False
   RESIZE: True
   CROP: True
-  CROP_SIZE: None
+  CROP_SIZE: [256, 256]
   FLIP: False
-  FLIP_P: None
+  FLIP_P: 0.5
   TOTENSOR: True
 
 OUTPUT:
@@ -36,7 +35,7 @@ DATASET:
   NAME: 'horse2zebra'
   TYPE: 'unaligned'
   ROOT_DIR: '/mnt/disk3/quyi/horse2zebra'
-  MAX_SIZE: float('inf')
+  MAX_SIZE: 'inf'
   DIRECTION: True
   
 DATALOADER:

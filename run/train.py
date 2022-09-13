@@ -25,4 +25,4 @@ def main():
 
 if __name__ == '__main__':
     main()
-    print(cfg.MODEL.DEVICE_IDS)
+    print(cfg.PROCESS.FLIP_P)
