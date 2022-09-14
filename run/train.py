@@ -1,4 +1,6 @@
+import os
 import sys
+import torch
 import argparse
 
 sys.path.append('.')
@@ -16,7 +18,18 @@ def get_cfg(args):
     if config_file != "":
         cfg.merge_from_file(config_file)
         cfg.merge_from_list(['TRAIN.IS_TRAIN', args.train])
-    cfg.freeze()
+        cfg.SOLVER.START_EPOCH = get_start_epoch(cfg)
+    # cfg.defrost() 解冻
+    cfg.freeze() 
+
+def get_start_epoch(cfg):
+    start_epoch = 0
+    if cfg.TRAIN.IS_TRAIN and cfg.CHECKPOINT.RESUME != 'none':
+        if not os.path.isfile(cfg.CHECKPOINT.RESUME):
+            raise RuntimeError("not find checkpoint {}".format(cfg.CHECKPOINT.RESUME))
+        checkpoint = torch.load(cfg.CHECKPOINT.RESUME)
+        start_epoch = checkpoint['epoch']
+    return start_epoch
 
 def main():
     args = get_args()
@@ -25,4 +38,4 @@ def main():
 
 if __name__ == '__main__':
     main()
-    print(cfg.PROCESS.FLIP_P)
+    print(cfg.SOLVER.START_EPOCH)
