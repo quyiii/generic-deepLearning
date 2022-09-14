@@ -12,8 +12,16 @@ _C.MODEL.DEVICE_IDS = [0]
 _C.MODEL.SEED = 1
 _C.MODEL.PRETRAINED = False
 _C.MODEL.PRETRAIN_PATH = ''
-_C.MODEL.LOSS = ''
 _C.MODEL.DROPOUT = 0.5
+
+# -----------------------------------------------------------
+# LOSS
+# -----------------------------------------------------------
+_C.LOSS = CN()
+_C.LOSS.NAME = ''
+_C.LOSS.LAMBDA_A = 10
+_C.LOSS.LAMBDA_B = 10
+_C.LOSS.LAMBDA_IDENTITY = 0.5
 
 # -----------------------------------------------------------
 # INPUT
@@ -27,6 +35,7 @@ _C.INPUT.GRAY_STD = [0.5]
 _C.INPUT.MEAN = [0.485, 0.456, 0.406]
 _C.INPUT.STD = [0.229, 0.224, 0.225]
 _C.INPUT.MODALITY = 'RGB'
+_C.INPUT.DIRECTION = True
 
 # -----------------------------------------------------------
 # PROCESS
@@ -55,7 +64,6 @@ _C.DATASET.NAME = ''
 _C.DATASET.TYPE = ''
 _C.DATASET.ROOT_DIR = ''
 _C.DATASET.MAX_SIZE = 'inf'
-_C.DATASET.DIRECTION = True
 
 # -----------------------------------------------------------
 # DATALOADER

@@ -5,8 +5,13 @@ MODEL:
   SEED: 1
   PRETRAINED: False
   PRETRAIN_PATH: ''
-  LOSS: 'cycle_gan_loss'
   DROPOUT: 0.5
+  
+LOSS:
+  NAME: 'cycle_gan_loss'
+  LAMBDA_A: 10
+  LAMBDA_B: 10
+  LAMBDA_IDENTITY: 0.5
 
 INPUT:
   TYPE: 'image'
@@ -17,6 +22,7 @@ INPUT:
   MEAN: [0.485, 0.456, 0.406]
   STD: [0.229, 0.224, 0.225]
   MODALITY: 'RGB'
+  DIRECTION: True
 
 PROCESS:
   RESIZE: True
@@ -36,7 +42,6 @@ DATASET:
   TYPE: 'unaligned'
   ROOT_DIR: '/mnt/disk3/quyi/horse2zebra'
   MAX_SIZE: 'inf'
-  DIRECTION: True
   
 DATALOADER:
   NUM_WORKERS: 8

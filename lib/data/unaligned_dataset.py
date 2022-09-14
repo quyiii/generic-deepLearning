@@ -19,8 +19,8 @@ class UnalignedDataset(BaseDataset):
             self.A_size = len(self.A_paths)
             self.B_size = len(self.B_paths)
             # AtoB
-            input_nc = self.cfg.INPUT.CHANNEL if cfg.DATASET.DIRECTION else self.cfg.OUTPUT.CHANNEL
-            output_nc = self.cfg.OUTPUT.CHANNEL if cfg.DATASET.DIRECTION else self.cfg.INPUT.CHANNEL
+            input_nc = self.cfg.INPUT.CHANNEL if cfg.INPUT.DIRECTION else self.cfg.OUTPUT.CHANNEL
+            output_nc = self.cfg.OUTPUT.CHANNEL if cfg.INPUT.DIRECTION else self.cfg.INPUT.CHANNEL
             self.transform_A = get_transform(self.cfg, grayscale=(input_nc == 1))
             self.transform_B = get_transform(self.cfg, grayscale=(output_nc == 1))
         else:
