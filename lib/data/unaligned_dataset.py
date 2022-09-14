@@ -1,7 +1,7 @@
 import os
 import random
-from data.image_folder import get_image_paths, get_image, get_transform
-from data.base_dataset import BaseDataset
+from .image_folder import get_image_paths, get_image, get_transform
+from .base_dataset import BaseDataset
 
 class UnalignedDataset(BaseDataset):
     """

@@ -1,10 +1,10 @@
 import importlib
 from torch.utils.data import DataLoader
-from data.base_dataset import BaseDataset
+from .base_dataset import BaseDataset
 
-def get_dataset_by_name(dataset_type, dataset_name):
+def get_dataset_class(dataset_type):
     dataset = None
-    file_name = "data." + dataset_type + "_dataset"
+    file_name = "lib.data." + dataset_type + "_dataset"
     datasetlib = importlib.import_module(file_name)
 
     target_dataset_type = dataset_type.replace('_', '').lower() + "dataset"
@@ -13,7 +13,7 @@ def get_dataset_by_name(dataset_type, dataset_name):
             dataset = cls
             break
     if dataset is None:
-        raise NotImplementError("no {}.py in lib/data".format(target_dataset_type))
+        raise NotImplementError("no {}.py in lib/data".format(dataset_type + "_dataset"))
     return dataset
 
 
