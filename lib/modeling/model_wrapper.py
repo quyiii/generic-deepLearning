@@ -12,8 +12,11 @@ class ModelWrapper(nn.Module):
     def prepare_model(self):
         model_class = get_model_class(self.cfg)
         if self.cfg.
-    
+
     def forward(self, x):
         return self.model(x)
 
+    def get_loss(self):
+        loss = None
+        return loss
     
