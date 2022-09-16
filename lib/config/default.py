@@ -80,9 +80,11 @@ _C.SOLVER.OPTIMIZER_NAME = "SGD"
 _C.SOLVER.LR_SCHEDULER = 'linear'
 _C.SOLVER.BASE_LR = 0.0002
 _C.SOLVER.MAX_EPOCH = 400
+# the epoch that lr decay to 0
 _C.SOLVER.LR_DECAY_EPOCH = 200
 _C.SOLVER.START_EPOCH = 0
-_C.SOLVER.INIT_LR_EPOCH = 200
+_C.SOLVER.LR_INIT_EPOCH = 200
+_C.SOLVER.LR_DECAY_ITERS =  50
 
 # -----------------------------------------------------------
 # TRAIN
