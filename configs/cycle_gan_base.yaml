@@ -6,6 +6,7 @@ MODEL:
   PRETRAINED: False
   PRETRAIN_PATH: ''
   DROPOUT: 0.5
+  NORM: 'batch'
   
 LOSS:
   NAME: 'cycle_gan_loss'

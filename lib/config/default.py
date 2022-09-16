@@ -13,6 +13,7 @@ _C.MODEL.SEED = 1
 _C.MODEL.PRETRAINED = False
 _C.MODEL.PRETRAIN_PATH = ''
 _C.MODEL.DROPOUT = 0.5
+_C.MODEL.NORM = 'none'
 
 # -----------------------------------------------------------
 # LOSS

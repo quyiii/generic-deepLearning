@@ -1,7 +1,7 @@
 from torch.optim import lr_scheduler
 
 def get_scheduler(optimizer, cfg):
-    lr_policy = cfg.SOLVER.LR_SCHEDULER
+    lr_policy = cfg.SOLVER.LR_SCHEDULER.lower()
     if lr_policy == 'linear':
         # 线性调节学习率: lr = lambda * lr
         def lambda_rule(epoch):
