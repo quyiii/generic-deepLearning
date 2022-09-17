@@ -58,23 +58,42 @@ class ResnetGenerator(nn.Module):
                  norm_layer(nfg),
                  nn.ReLU(True)]
 
-        n_downsampling = 2
+        n_downsampling = n_upsampling = 2
         # add n downsampling layers
         for i in range(n_downsampling):
             mult = 2 ** i
-            model += [nn.Conv2d(ngf * mult, nfg * mult * 2, kernel_size=3, stride=2, padding=1, bias=use_bias),
+            model += [nn.Conv2d(ngf * mult, nfg * mult * 2, kernel_size=3,
+                                stride=2, padding=1, bias=use_bias),
                       norm_layer(ngf * mult * 2),
                       nn.ReLU(True)]
 
-            mult = 2 ** n_downsampling
-            # add ResNet blocks
-            for i in range(n_blocks):
-                model += []
+        mult = 2 ** n_downsampling
+        # add ResNet blocks
+        for i in range(n_blocks):
+            model += [ResnetBlock(ngf * mult, padding_type=padding_type,
+                                  norm_layer=norm_layer, use_dropout=use_dropout,
+                                  use_bias=use_bias)]
+        
+        # add upsampling layers
+        for i in range(n_upsampling):
+            mult = 2 ** (n_upsampling - i)
+            # ConvTranspose2d 转置卷积/逆卷积  Conv(A) = B   ConvTranspose(B) = A
+            # 卷积计算公式 W = (W - k + 2P)/S + 1
+            # 因为卷积存在stride无法整除的情况 所以转置卷积加入了output_padding,以调控H W
+            model += [nn.ConvTranspose2d(ngf * mult, int(ngf * mult / 2),
+                                         kernel_size=3, stride=2,
+                                         padding=1, output_padding=1,
+                                         bias=use_bias),
+                      norm_layer(int(ngf * mult / 2)),
+                      nn.ReLU(True)]
 
-class ResnetBlock(nn.Nodule):
+
+
+class ResnetBlock(nn.Module):
     def __init__(self, dim, padding_type, norm_layer, use_dropout, use_bias):
         super(ResnetBlock, self).__init__()
-        self.conv_block = self.build_conv_block(dim, padding_type, norm_layer, use_dropout, use_bias)
+        self.conv_block = self.build_conv_block(dim, padding_type, norm_layer,
+                                                use_dropout, use_bias)
 
     def build_conv_block(self, dim, padding_type, norm_layer, use_dropout, use_bias):
         """Construct a convolutional block.
@@ -98,6 +117,22 @@ class ResnetBlock(nn.Nodule):
         elif padding_type == 'zero':
             p = 1
         else: 
+            raise NotImplementedError('padding {} is not implemented'.format(padding_type))
+        
+        conv_block += [nn.Conv2d(dim, dim, kernel_size=3, padding=p, bias=use_bias),
+                       norm_layer(dim)]
+
+        if use_dropout:
+            conv_block += [nn.Dropout(0.5)]
+
+        p = 0
+        if padding_type == 'reflect':
+            conv_block += [nn.ReflectionPad2d(1)]
+        elif padding_type == 'replicate':
+            conv_block += [nn.ReplicationPad2d(1)]
+        elif padding_type == 'zero':
+            p = 1
+        else:
             raise NotImplementedError('padding {} is not implemented'.format(padding_type))
         
         conv_block += [nn.Conv2d(dim, dim, kernel_size=3, padding=p, bias=use_bias),
