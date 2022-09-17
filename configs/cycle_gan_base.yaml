@@ -7,7 +7,11 @@ MODEL:
   PRETRAIN_PATH: ''
   DROPOUT: 0.5
   NORM: 'batch'
-  
+  INIT: 'norm'
+  CONSIST: 
+    G: 'resnet_9blocks'
+    D: 'basic'
+
 LOSS:
   NAME: 'cycle_gan_loss'
   LAMBDA_A: 10

@@ -16,7 +16,7 @@ def get_model_class(cfg):
     target_model_name = cfg.MODEL.NAME.replace('_', '')
     for name, cls in modelslib.__dict__.items():
         if name.lower() == target_model_name.lower() \
-           and issubclass(cls, nn.Module)
+           and issubclass(cls, nn.Module):
             model = cls
 
     if model is None:

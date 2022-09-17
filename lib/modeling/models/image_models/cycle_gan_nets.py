@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import functools
-from . import get_norm_layer
+from . import get_norm_layer, init_net
 
 def get_G(input_nc, output_nc, ngf, nteG, norm='batch', use_dropout=False, init_type='normal', init_gain=0.02, gpu_ids=[]):
     """Create a generator
@@ -30,4 +30,4 @@ def get_G(input_nc, output_nc, ngf, nteG, norm='batch', use_dropout=False, init_
         # net =
     else:
         raise NotImplementedError('generator {} is not implemented'.format(netG))
-    return 
+    return init_net(net, init_type, init_gain, gpu_ids)
