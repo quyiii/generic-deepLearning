@@ -28,7 +28,7 @@ class CycleGan(nn.Module):
     def __init__(self, cfg):
         self.cfg = cfg
         self.direction = cfg.INPUT.DIRECTION
-        self.is_train = self.cfg.TRAIN.IS_TRAIN:
+        self.is_train = self.cfg.TRAIN.IS_TRAIN
         if self.is_train:
             self.model_names = ['G_A', 'G_B', 'D_A', 'D_B'] 
         else:

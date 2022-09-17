@@ -1,7 +1,3 @@
-from . import digit_models
-from . import image_models
-from . import video_models
-from . import word_models
 import importlib
 import functools
 import torch
@@ -20,7 +16,7 @@ def get_model_class(cfg):
             model = cls
 
     if model is None:
-        raise NotImplementedError("In {}.py, there is no class {}".format(cfg.INPUT.TYPE.lower()+'_models', target_model_name))
+        raise NotImplementedError("In {}.py, class {} is not implemented".format(cfg.INPUT.TYPE.lower()+'_models', target_model_name))
     return model
 
 class NoneNorm(nn.Module):
