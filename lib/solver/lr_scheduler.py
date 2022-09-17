@@ -18,6 +18,6 @@ def get_scheduler(optimizer, cfg):
         # thresholda: 衡量指标是否变好的阈值
         scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.2, threshold=0.01, patience=5)
     else:
-        raise NotImplementError('lr_scheduler {} is not implemented'.format(lr_policy))
+        raise NotImplementedError('lr_scheduler {} is not implemented'.format(lr_policy))
     return scheduler
 

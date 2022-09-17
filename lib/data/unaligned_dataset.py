@@ -24,7 +24,7 @@ class UnalignedDataset(BaseDataset):
             self.transform_A = get_transform(self.cfg, grayscale=(input_nc == 1))
             self.transform_B = get_transform(self.cfg, grayscale=(output_nc == 1))
         else:
-            raise NotImplementError("unaligned dataset don't support data type {}".format(cfg.INPUT.TYPE))
+            raise NotImplementedError("unaligned dataset don't support data type {}".format(cfg.INPUT.TYPE))
         
     def __getitem__(self, index):
         A_path = self.A_paths[index % self.A_size]

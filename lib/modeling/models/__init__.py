@@ -4,6 +4,7 @@ from . import video_models
 from . import word_models
 import importlib
 import functools
+import torch
 import torch.nn as nn 
 
 def get_model_class(cfg):
@@ -18,7 +19,7 @@ def get_model_class(cfg):
             model = cls
 
     if model is None:
-        raise NotImplementError("In {}.py, there is no class {}".format(cfg.INPUT.TYPE.lower()+'_models', target_model_name))
+        raise NotImplementedError("In {}.py, there is no class {}".format(cfg.INPUT.TYPE.lower()+'_models', target_model_name))
     return model
 
 class NoneNorm(nn.Module):
@@ -38,5 +39,27 @@ def get_norm_layer(norm_type='none'):
     elif norm_type == 'none':
         def norm_layer(x): return NoneNorm()
     else:
-        raise NotImplementError('normalization layer {} is not implemented'.format(norm_layer))
+        raise NotImplementedError('normalization layer {} is not implemented'.format(norm_layer))
     return norm_layer
+
+def init_net(net, init_type='normal', init_gain=0.02, device='cuda', gpu_ids=[0]):
+    """Initialize a network: 1. register CPU/GPU device (with multi-GPU support); 2. initialize the network weights
+    Parameters:
+        net (network)      -- the network to be initialized
+        init_type (str)    -- the name of an initialization method: normal | xavier | kaiming | orthogonal
+        gain (float)       -- scaling factor for normal, xavier and orthogonal.
+        gpu_ids (int list) -- which GPUs the network runs on: e.g., 0,1,2
+
+    Return an initialized network.
+    """
+    if device.lower() == 'cuda':
+        assert(torch.cuda.is_available())
+        if len(gpu_ids) == 0:
+            raise RuntimeError('no gpu_ids for run program')
+        net = nn.DataParallel(net, gpu_ids)
+        net.to(gpu_ids[0])
+    elif device.lower() == 'cpu':
+        net.to('cpu')
+    else: 
+        raise NotImplementedError('no device {}'.format(device))
+    return net

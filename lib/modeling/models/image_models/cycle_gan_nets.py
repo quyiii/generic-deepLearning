@@ -19,5 +19,15 @@ def get_G(input_nc, output_nc, ngf, nteG, norm='batch', use_dropout=False, init_
 
     Returns a generator
     """
-    
+    net = None
+    norm_layer = get_norm_layer(norm_type=norm)
 
+    if netG == 'resnet_9blocks':
+        pass
+        # net = 
+    elif netG == 'resnet_6blocks':
+        pass
+        # net =
+    else:
+        raise NotImplementedError('generator {} is not implemented'.format(netG))
+    return 
