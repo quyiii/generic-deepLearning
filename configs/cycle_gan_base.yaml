@@ -10,7 +10,7 @@ MODEL:
   INIT: 'norm'
   CONSIST: 
     G: 'resnet_9blocks'
-    D: 'basic'
+    D: 3
 
 LOSS:
   NAME: 'cycle_gan_loss'

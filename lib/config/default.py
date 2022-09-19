@@ -17,7 +17,7 @@ _C.MODEL.NORM = 'none'
 _C.MODEL.INIT = 'norm'
 _C.MODEL.CONSIST = CN()
 _C.MODEL.CONSIST.G = 'resnet_9blocks'
-_C.MODEL.CONSIST.D = 'basic'
+_C.MODEL.CONSIST.D = 3
 
 
 # -----------------------------------------------------------

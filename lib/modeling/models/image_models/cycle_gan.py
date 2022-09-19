@@ -1,4 +1,5 @@
 import torch.nn as nn
+from .cycle_gan_nets import get_G, get_D
 
 '''
 This model named cyle_gan, which is used to transform the image's style
@@ -33,5 +34,8 @@ class CycleGan(nn.Module):
             self.model_names = ['G_A', 'G_B', 'D_A', 'D_B'] 
         else:
             self.model_names = ['G_A', 'G_B']
+        
+        self.netG_A = get_G(cfg.INPUT.CHANNEL, cfg.OUTPUT.CHANNEL, 64, cfg.MODEL.CONSIST.G, cfg.MODEL.NORM,
+                            cfg.MODEL.DROPOUT)
 
     def forward(self, x):

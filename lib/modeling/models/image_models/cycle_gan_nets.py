@@ -22,14 +22,34 @@ def get_G(input_nc, output_nc, ngf, netG, norm='batch', use_dropout=False, init_
     norm_layer = get_norm_layer(norm_type=norm)
 
     if netG == 'resnet_9blocks':
-        pass
-        # net = 
+        net = ResnetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=9) 
     elif netG == 'resnet_6blocks':
-        pass
-        # net =
+        net = ResnetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=6)
     else:
         raise NotImplementedError('generator {} is not implemented'.format(netG))
     return init_net(net, init_type, init_gain, gpu_ids)
+
+def get_D(input_nc, ndf, n_layers_D=3, norm='batch', init_type='normal', init_gain=0.02, gpu_ids=[]):
+    """Create a discriminator
+
+    Parameters:
+        input_nc (int)     -- the number of channels in input images
+        ndf (int)          -- the number of filters in the first conv layer
+        netD (str)         -- the architecture's name: basic | n_layers | pixel
+        n_layers_D (int)   -- the number of conv layers in the discriminator; effective when netD=='n_layers'
+        norm (str)         -- the type of normalization layers used in the network.
+        init_type (str)    -- the name of the initialization method.
+        init_gain (float)  -- scaling factor for normal, xavier and orthogonal.
+        gpu_ids (int list) -- which GPUs the network runs on: e.g., 0,1,2
+
+    Returns a discriminator
+    """
+    net = None
+    norm_layer = get_norm_layer(norm_type=norm)
+    
+    net = NLayerDiscriminator(input_nc, ndf, n_layers=n_layers_D, norm_layer=norm_layer)
+    return init_net(net, init_type, init_gain, gpu_ids)
+    
 
 class ResnetGenerator(nn.Module):
     def __init__(self, input_nc, output_nc, ngf=64, norm_layer=nn.BatchNorm2d, use_dropout=False, n_blocks=6, padding_type='reflect'):
@@ -79,14 +99,21 @@ class ResnetGenerator(nn.Module):
             mult = 2 ** (n_upsampling - i)
             # ConvTranspose2d 转置卷积/逆卷积  Conv(A) = B   ConvTranspose(B) = A
             # 卷积计算公式 W = (W - k + 2P)/S + 1
-            # 因为卷积存在stride无法整除的情况 所以转置卷积加入了output_padding,以调控H W
+            # 逆卷积计算公式 W = (W - 1)*S - 2P + k + output_padding  
+            # Stride Padding kernel_size与原来同  
+            # output_ padding用于调控非整除情况！！！ 补上被舍去的
             model += [nn.ConvTranspose2d(ngf * mult, int(ngf * mult / 2),
                                          kernel_size=3, stride=2,
                                          padding=1, output_padding=1,
                                          bias=use_bias),
                       norm_layer(int(ngf * mult / 2)),
                       nn.ReLU(True)]
+        model += [nn.ReflectionPad2d(3)]
+        model += [nn.Conv2d(ngf, output_nc, kernel_size=7, padding=0)]
+        # -1 ~ 1 解决了sigmoid不以0为中心的问题
+        model += [nn.Tanh()]
 
+        self.model = nn.Sequential(*model)
 
 
 class ResnetBlock(nn.Module):
@@ -143,4 +170,37 @@ class ResnetBlock(nn.Module):
     def forward(self, x):
         out = x + self.conv_block(x)
         return out
+
+class NLayerDiscriminator(nn.Module):
+    def __init__(self, input_nc, ndf=64, n_layers=3, norm_layer=nn.BatchNorm2d):
+        super(NLayerDiscriminator, self).__init__()
+        if type(norm_layer) == functools.partial:
+            use_bias = norm_layer.func == nn.InstanceNorm2d
+        else:
+            use_bias = norm_layer == nn.InstanceNorm2d
         
+        kw = 4
+        padw = 1
+        # LeakyReLu(leak): max(0,x)+leak*min(0,x)
+        sequence = [nn.Conv2d(input_nc, ndf, kernel_size=kw, stride=2, padding=padw), 
+                    nn.LeakyReLU(0.2, True)]
+        nf_mult = 1
+        nf_mult_prev = 1
+        for n in range(1, n_layers):
+            nf_mult_prev = nf_mult
+            nf_mult = min(2 ** n, 8)
+            sequence += [nn.Conv2d(ndf* nf_mult_prev, ndf * nf_mult, kernel_size=kw, stride=2, padding=padw, bias=use_bias),
+                         norm_layer(ndf*nf_mult),
+                         nn.LeakyReLU(0.2, True)]
+        
+        nf_mult_prev = nf_mult
+        nf_mult = min(2 ** n_layers, 8)
+        sequence += [nn.Conv2d(ndf * nf_mult_prev, ndf * nf_mult, kernel_size=kw, stride=1, padding=padw, bias=use_bias),
+                     norm_layer(ndf*nf_mult),
+                     nn.LeakyReLU(0.2, True)]
+        
+        sequence += [nn.Conv2d(ndf * nf_mult, 1, kernel_size=kw, stride=1, padding=padw)]
+        self.model = nn.Sequential(*sequence)
+
+    def forward(self, input):
+        return self.model(input)
