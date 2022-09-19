@@ -1,4 +1,5 @@
 from .lr_scheduler import get_scheduler
+from .optim import get_optim
 import importlib
 import torch.nn as nn 
 from torch.nn import L1Loss

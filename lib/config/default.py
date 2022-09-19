@@ -83,7 +83,8 @@ _C.DATALOADER.BATCH_SIZE = 128
 # SOLVER
 # -----------------------------------------------------------
 _C.SOLVER = CN()
-_C.SOLVER.OPTIMIZER_NAME = "SGD"
+_C.SOLVER.OPTIM_NAME = "SGD"
+_C.SOLVER.OPTIM_BETA = 0.5
 _C.SOLVER.LR_SCHEDULER = 'linear'
 _C.SOLVER.BASE_LR = 0.0002
 _C.SOLVER.MAX_EPOCH = 400

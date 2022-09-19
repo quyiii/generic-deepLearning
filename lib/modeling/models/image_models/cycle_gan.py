@@ -1,6 +1,8 @@
+import torch
+import itertools
 import torch.nn as nn
 from .cycle_gan_nets import get_G, get_D
-from lib.solver import get_loss_class
+from lib.solver import get_loss_class, get_optim
 
 '''
 This model named cyle_gan, which is used to transform the image's style
@@ -48,10 +50,11 @@ class CycleGan(nn.Module):
             if cfg.LOSS.LAMBDA_IDENTITY > 0:
                 assert(cfg.INPUT.CHANNEL == cfg.OUTPUT.CHANNEL)
             
-            self.criterionGAN = get_loss_class(cfg)('lsgan').to(cfg.MODEL.DEVICE)
-            self.criterionCycle = get_loss_class(cfg)()
-            self.criterionIdt = get_loss_class(cfg)() 
+            self.criterionGAN = get_loss_class(cfg, 0)('lsgan').to(cfg.MODEL.DEVICE)
+            self.criterionCycle = get_loss_class(cfg, 1)()
+            self.criterionIdt = get_loss_class(cfg, 1)() 
 
+            self.optimizer_G = get_optim(cfg, itertools.chain(self.netG_A.parameters, self.netG_B.parameters()))
 
     def forward(self, x):
         pass
