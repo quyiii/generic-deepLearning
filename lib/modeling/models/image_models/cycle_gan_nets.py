@@ -2,7 +2,7 @@ import torch.nn as nn
 import functools
 from lib.modeling.models import get_norm_layer, init_net
 
-def get_G(input_nc, output_nc, ngf, netG, norm='batch', use_dropout=False, init_type='normal', init_gain=0.02, gpu_ids=[]):
+def get_G(input_nc, output_nc, ngf, netG, norm='batch', dropout=0, init_type='normal', init_gain=0.02, gpu_ids=[]):
     """Create a generator
 
     Parameters:
@@ -11,7 +11,7 @@ def get_G(input_nc, output_nc, ngf, netG, norm='batch', use_dropout=False, init_
         ngf (int) -- the number of filters in the last conv layer
         netG (str) -- the architecture's name: resnet_9blocks | resnet_6blocks | unet_256 | unet_128
         norm (str) -- the name of normalization layers used in the network: batch | instance | none
-        use_dropout (bool) -- if use dropout layers.
+        dropout (int) -- if use dropout layers and the p.
         init_type (str)    -- the name of our initialization method.
         init_gain (float)  -- scaling factor for normal, xavier and orthogonal.
         gpu_ids (int list) -- which GPUs the network runs on: e.g., 0,1,2
@@ -22,9 +22,9 @@ def get_G(input_nc, output_nc, ngf, netG, norm='batch', use_dropout=False, init_
     norm_layer = get_norm_layer(norm_type=norm)
 
     if netG == 'resnet_9blocks':
-        net = ResnetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=9) 
+        net = ResnetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, dropout=dropout, n_blocks=9) 
     elif netG == 'resnet_6blocks':
-        net = ResnetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=6)
+        net = ResnetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, dropout=dropout, n_blocks=6)
     else:
         raise NotImplementedError('generator {} is not implemented'.format(netG))
     return init_net(net, init_type, init_gain, gpu_ids)
@@ -52,7 +52,7 @@ def get_D(input_nc, ndf, n_layers_D=3, norm='batch', init_type='normal', init_ga
     
 
 class ResnetGenerator(nn.Module):
-    def __init__(self, input_nc, output_nc, ngf=64, norm_layer=nn.BatchNorm2d, use_dropout=False, n_blocks=6, padding_type='reflect'):
+    def __init__(self, input_nc, output_nc, ngf=64, norm_layer=nn.BatchNorm2d, dropout=0, n_blocks=6, padding_type='reflect'):
         """Construct a Resnet-based generator
 
         Parameters:
@@ -60,7 +60,7 @@ class ResnetGenerator(nn.Module):
             output_nc (int)     -- the number of channels in output images
             ngf (int)           -- the number of filters in the last conv layer
             norm_layer          -- normalization layer
-            use_dropout (bool)  -- if use dropout layers
+            dropout (int)  -- if use dropout layers and the p
             n_blocks (int)      -- the number of ResNet blocks
             padding_type (str)  -- the name of padding layer in conv layers: reflect | replicate | zero
         """
@@ -91,7 +91,7 @@ class ResnetGenerator(nn.Module):
         # add ResNet blocks
         for i in range(n_blocks):
             model += [ResnetBlock(ngf * mult, padding_type=padding_type,
-                                  norm_layer=norm_layer, use_dropout=use_dropout,
+                                  norm_layer=norm_layer, dropout=dropout,
                                   use_bias=use_bias)]
         
         # add upsampling layers
@@ -117,19 +117,19 @@ class ResnetGenerator(nn.Module):
 
 
 class ResnetBlock(nn.Module):
-    def __init__(self, dim, padding_type, norm_layer, use_dropout, use_bias):
+    def __init__(self, dim, padding_type, norm_layer, dropout, use_bias):
         super(ResnetBlock, self).__init__()
         self.conv_block = self.build_conv_block(dim, padding_type, norm_layer,
-                                                use_dropout, use_bias)
+                                                dropout, use_bias)
 
-    def build_conv_block(self, dim, padding_type, norm_layer, use_dropout, use_bias):
+    def build_conv_block(self, dim, padding_type, norm_layer, dropout, use_bias):
         """Construct a convolutional block.
 
         Parameters:
             dim (int)           -- the number of channels in the conv layer.
             padding_type (str)  -- the name of padding layer: reflect | replicate | zero
             norm_layer          -- normalization layer
-            use_dropout (bool)  -- if use dropout layers.
+            dropout (int)  -- if use dropout layers and the p.
             use_bias (bool)     -- if the conv layer uses bias or not
 
         Returns a conv block (with a conv layer, a normalization layer, and a non-linearity layer (ReLU))
@@ -149,8 +149,8 @@ class ResnetBlock(nn.Module):
         conv_block += [nn.Conv2d(dim, dim, kernel_size=3, padding=p, bias=use_bias),
                        norm_layer(dim)]
 
-        if use_dropout:
-            conv_block += [nn.Dropout(0.5)]
+        if dropout:
+            conv_block += [nn.Dropout(dropout)]
 
         p = 0
         if padding_type == 'reflect':

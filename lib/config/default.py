@@ -15,6 +15,7 @@ _C.MODEL.PRETRAIN_PATH = ''
 _C.MODEL.DROPOUT = 0.5
 _C.MODEL.NORM = 'none'
 _C.MODEL.INIT = 'norm'
+_C.MODEL.INIT_GAIN = 0.02
 _C.MODEL.CONSIST = CN()
 _C.MODEL.CONSIST.G = 'resnet_9blocks'
 _C.MODEL.CONSIST.D = 3
@@ -24,7 +25,7 @@ _C.MODEL.CONSIST.D = 3
 # LOSS
 # -----------------------------------------------------------
 _C.LOSS = CN()
-_C.LOSS.NAME = ''
+_C.LOSS.NAME = ['gan_loss', 'L1Loss']
 _C.LOSS.LAMBDA_A = 10
 _C.LOSS.LAMBDA_B = 10
 _C.LOSS.LAMBDA_IDENTITY = 0.5

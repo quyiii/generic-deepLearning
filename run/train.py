@@ -5,6 +5,7 @@ import argparse
 
 sys.path.append('.')
 from lib.config import cfg
+from lib.solver import get_loss_class
 
 def get_args():
     parser = argparse.ArgumentParser(description='model training')
@@ -39,3 +40,5 @@ def main():
 if __name__ == '__main__':
     main()
     print(cfg.SOLVER.START_EPOCH)
+    loss = get_loss_class(cfg, 1)
+    print(loss.__name__)

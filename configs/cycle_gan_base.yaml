@@ -8,12 +8,13 @@ MODEL:
   DROPOUT: 0.5
   NORM: 'batch'
   INIT: 'norm'
+  INIT_GAIN: 0.02
   CONSIST: 
     G: 'resnet_9blocks'
     D: 3
 
 LOSS:
-  NAME: 'cycle_gan_loss'
+  NAME: ['gan_loss', 'L1Loss']
   LAMBDA_A: 10
   LAMBDA_B: 10
   LAMBDA_IDENTITY: 0.5

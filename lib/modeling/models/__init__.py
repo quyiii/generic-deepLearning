@@ -5,7 +5,7 @@ import torch.nn as nn
 from torch.nn import init
 
 def get_model_class(cfg):
-    file_name = 'lib.modeling.models.'+cfg.INPUT.TYPE.lower()+'_models'
+    file_name = 'lib.modeling.models.'+cfg.INPUT.TYPE.lower()+'_models.'+cfg.MODEL.NAME.lower()
     modelslib = importlib.import_module(file_name)
 
     model = None
@@ -14,9 +14,10 @@ def get_model_class(cfg):
         if name.lower() == target_model_name.lower() \
            and issubclass(cls, nn.Module):
             model = cls
+            break
 
     if model is None:
-        raise NotImplementedError("In {}.py, class {} is not implemented".format(cfg.INPUT.TYPE.lower()+'_models', target_model_name))
+        raise NotImplementedError("In {}, class {} is not implemented".format(cfg.INPUT.TYPE.lower()+'_models', target_model_name))
     return model
 
 class NoneNorm(nn.Module):
