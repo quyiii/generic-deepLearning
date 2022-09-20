@@ -19,7 +19,7 @@ def get_cfg(args):
     if config_file != "":
         cfg.merge_from_file(config_file)
         cfg.merge_from_list(['TRAIN.IS_TRAIN', args.train])
-        cfg.SOLVER.START_EPOCH = get_start_epoch(cfg)
+        cfg.TRAIN.START_EPOCH = get_start_epoch(cfg)
     # cfg.defrost() 解冻
     cfg.freeze() 
 
@@ -27,9 +27,9 @@ def get_start_epoch(cfg):
     start_epoch = 0
     if cfg.TRAIN.IS_TRAIN and cfg.CHECKPOINT.RESUME != 'none':
         if not os.path.isfile(cfg.CHECKPOINT.RESUME):
-            raise RuntimeError("not find checkpoint {}".format(cfg.CHECKPOINT.RESUME))
+            raise RuntimeError("not find checkpoint file {}".format(cfg.CHECKPOINT.RESUME))
         checkpoint = torch.load(cfg.CHECKPOINT.RESUME)
-        start_epoch = checkpoint['epoch']
+        start_epoch = checkpoint['epoch'] + 1
     return start_epoch
 
 def main():
@@ -39,6 +39,6 @@ def main():
 
 if __name__ == '__main__':
     main()
-    print(cfg.SOLVER.START_EPOCH)
+    print(cfg.TRAIN.START_EPOCH)
     loss = get_loss_class(cfg, 1)
     print(loss.__name__)

@@ -5,7 +5,7 @@ def get_scheduler(optimizer, cfg):
     if lr_policy == 'linear':
         # 线性调节学习率: lr = lambda * lr
         def lambda_rule(epoch):
-            lr_l = 1.0 - max(0, epoch + cfg.SOLVER.START_EPOCH - cfg.SOLVER.LR_INIT_EPOCH)/float(cfg.SOLVER.LR_DECAY_EPOCH + 1)
+            lr_l = 1.0 - max(0, epoch + cfg.TRAIN.START_EPOCH - cfg.SOLVER.LR_INIT_EPOCH)/float(cfg.SOLVER.LR_DECAY_EPOCH + 1)
             return lr_l
         scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda_rule)
     elif lr_policy == 'step':

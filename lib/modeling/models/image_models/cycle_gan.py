@@ -3,6 +3,7 @@ import itertools
 import torch.nn as nn
 from .cycle_gan_nets import get_G, get_D
 from lib.solver import get_loss_class, get_optim
+from lib.util import ImagePool
 
 '''
 This model named cyle_gan, which is used to transform the image's style
@@ -35,6 +36,16 @@ class CycleGan(nn.Module):
         self.direction = cfg.INPUT.DIRECTION
         self.is_train = self.cfg.TRAIN.IS_TRAIN
 
+        self.loss_names = ['D_A', 'G_A', 'cycle_A', 'idt_A', 'D_B', 'G_B', 'cycle_B', 'idt_B']
+
+        visual_names_A = ['real_A', 'fake_B', 'rec_A']
+        visual_names_B = ['real_B', 'fake_A', 'rec_B']
+        if self.cfg.TRAIN.IS_TRAIN and self.cfg.LOSS.LAMBDA_IDENTITY > 0.0:  # if identity loss is used, we also visualize idt_B=G_A(B) ad idt_A=G_A(B)
+            visual_names_A.append('idt_B')
+            visual_names_B.append('idt_A')
+
+        self.visual_names = visual_names_A + visual_names_B 
+
         self.netG_A = get_G(cfg.INPUT.CHANNEL, cfg.OUTPUT.CHANNEL, 64, cfg.MODEL.CONSIST.G, cfg.MODEL.NORM,
                             cfg.MODEL.DROPOUT, cfg.MODEL.INIT, cfg.MODEL.INIT_GAIN, cfg.DEVICE_IDS)
         self.netG_B = get_G(cfg.OUTPUT.CHANNEL, cfg.INPUT.CHANNEL, 64, cfg.MODEL.CONSIST.G, cfg.MODEL.NORM,
@@ -51,6 +62,9 @@ class CycleGan(nn.Module):
             if cfg.LOSS.LAMBDA_IDENTITY > 0:
                 assert(cfg.INPUT.CHANNEL == cfg.OUTPUT.CHANNEL)
             
+            self.fake_A_pool = ImagePool(cfg.INPUT.POOL_SIZE)
+            self.fake_B_pool = ImagePool(cfg.INPUT.POOL_SIZE)
+
             self.criterionGAN = get_loss_class(cfg, 0)('lsgan').to(self.device)
             self.criterionCycle = get_loss_class(cfg, 1)()
             self.criterionIdt = get_loss_class(cfg, 1)() 
@@ -69,7 +83,7 @@ class CycleGan(nn.Module):
         self.fake_A = self.netG_B(self.real_B)
         self.rec_B = self.netG_A(self.fake_A)
 
-    def backward_D_baisc(self, netD, real, fake):
+    def backward_D_basic(self, netD, real, fake):
         """Calculate GAN loss for the discriminator
 
         Parameters:
@@ -92,4 +106,59 @@ class CycleGan(nn.Module):
         return loss_D
 
     def backward_D_A(self):
-        fake_B = 
+        fake_B = self.fake_B_pool.query(self.fake_B)
+        self.loss_D_A = self.backward_D_basic(self.netD_A, self.real_B, fake_B)
+
+    def backward_D_B(self):
+        fake_A = self.fake_A_pool.query(self.fake_A)
+        self.loss_D_B = self.backward_D_basic(self.netD_B, self.real_B, fake_A)
+    
+    def backward_G(self):
+        # weight for identity loss (A->A) (B->B)
+        lambda_idt = self.cfg.LOSS.LAMBDA_IDENTITY
+        # weight for cycle loss (A->B->A)
+        lambda_A = self.cfg.LOSS.LAMBDA_A
+        # weight for cycle loss (B->A->B)
+        lambda_B = self.cfg.LOSS.LAMBDA_B
+
+        if lambda_idt > 0:
+            self.idt_A = self.netG_A(self.real_B)
+            self.loss_idt_A = self.criterionIdt(self.idt_A, self.real_B) * lambda_B * lambda_idt
+            self.idt_B = self.netG_B(self.real_A)
+            self.loss_idt_B = self.criterionIdt(self.idt_B, self.real_A) * lambda_A * lambda_idt
+        else:
+            self.loss_idt_A = 0
+            self.loss_idt_B = 0
+        
+        self.loss_G_A = self.criterionGAN(self.netD_A(self.fake_B), True)
+        self.loss_G_B = self.criterionGAN(self.netD_B(self.fake_A), True)
+
+        self.loss_cycle_A = self.criterionCycle(self.rec_A, self.real_A) * lambda_A
+        self.loss_cycle_B = self.criterionCycle(self.rec_B, self.real_B) * lambda_B
+
+        self.loss_G = self.loss_G_A + self.loss_G_B + self.loss_cycle_A + self.loss_cycle_B + self.loss_idt_A + self.loss_idt_B
+        self.loss_G.backward()
+
+    def optimize_parameters(self):
+        self.forward()
+        self.set_requires_grad([self.netD_A, self.netD_B], False)
+
+    def eval(self):
+        for name in self.model_names:
+            if isinstance(name, str):
+                net = getattr(self, 'net' + name)
+                # net.eval() 不norm 不dropout
+                net.eval()
+
+    def test(self):
+        self.eval()
+        with torch.no_grad:
+            self.forward()
+
+    def set_requires_grad(self, nets, requires_grad=False):
+        if not isinstance(nets, list):
+            nets = [nets]
+        for net in nets:
+            if net is not None:
+                for param in net.parameters():
+                    param.requires_grad = requires_grad

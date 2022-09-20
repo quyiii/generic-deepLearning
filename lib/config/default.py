@@ -43,6 +43,7 @@ _C.INPUT.MEAN = [0.485, 0.456, 0.406]
 _C.INPUT.STD = [0.229, 0.224, 0.225]
 _C.INPUT.MODALITY = 'RGB'
 _C.INPUT.DIRECTION = True
+_C.INPUT.POOL_SIZE = 50
 
 # -----------------------------------------------------------
 # PROCESS
@@ -87,10 +88,8 @@ _C.SOLVER.OPTIM_NAME = "SGD"
 _C.SOLVER.OPTIM_BETA = 0.5
 _C.SOLVER.LR_SCHEDULER = 'linear'
 _C.SOLVER.BASE_LR = 0.0002
-_C.SOLVER.MAX_EPOCH = 400
 # the epoch that lr decay to 0
 _C.SOLVER.LR_DECAY_EPOCH = 200
-_C.SOLVER.START_EPOCH = 0
 _C.SOLVER.LR_INIT_EPOCH = 200
 _C.SOLVER.LR_DECAY_ITERS =  50
 
@@ -98,6 +97,9 @@ _C.SOLVER.LR_DECAY_ITERS =  50
 # TRAIN
 # -----------------------------------------------------------
 _C.TRAIN = CN()
+_C.TRAIN.START_EPOCH = 0
+_C.TRAIN.MAX_EPOCH = 400
+_C.SOLVER.ADD_EPOCH = 0
 _C.TRAIN.IS_TRAIN = True
 
 # -----------------------------------------------------------
