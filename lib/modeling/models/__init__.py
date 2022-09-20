@@ -55,12 +55,13 @@ def init_net(net, init_type='normal', init_gain=0.02, device='cuda', gpu_ids=[0]
         if len(gpu_ids) == 0:
             raise RuntimeError('no gpu_ids for run program')
         net = nn.DataParallel(net, gpu_ids)
+        # to() 输入数字a 默认为cuda:a
         net.to("cuda:" + gpu_ids[0])
     elif device.lower() == 'cpu':
         net.to('cpu')
     else: 
         raise NotImplementedError('no device {}'.format(device))
-    init_weight(net, init_type, init_gain)
+    init_weights(net, init_type, init_gain)
     return net
 
 def init_weights(net, init_type='normal', init_gain=0.02):
