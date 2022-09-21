@@ -79,6 +79,7 @@ _C.DATASET.MAX_SIZE = 'inf'
 # DATALOADER
 # -----------------------------------------------------------
 _C.DATALOADER = CN()
+_C.DATALOADER.SHUFFLE = True
 _C.DATALOADER.NUM_WORKERS = 8
 _C.DATALOADER.BATCH_SIZE = 128
 

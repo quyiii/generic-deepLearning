@@ -7,6 +7,7 @@ class TensorboardSummary(object):
     
     writer = SummaryWriter(file_path)
     writer.add_scalar('title', value, epoch)
+    writer.add_image('title', iamge_tensor(3, H, W), epoch)
     writer.close()
 
     teminal input:

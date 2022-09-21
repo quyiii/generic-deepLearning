@@ -2,9 +2,11 @@ import importlib
 from torch.utils.data import DataLoader
 from .base_dataset import BaseDataset
 
-def get_dataset_class(dataset_type):
+def get_dataset_class(cfg):
     dataset = None
-    file_name = "lib.data." + dataset_type + "_dataset"
+    input_type = cfg.INPUT.TYPE.lower()
+    dataset_type = cfg.DATASET.TYPE.lower()
+    file_name = "lib.data." + input_type + "_datasets." + dataset_type
     datasetlib = importlib.import_module(file_name)
 
     target_dataset_type = dataset_type.replace('_', '').lower() + "dataset"
@@ -18,3 +20,13 @@ def get_dataset_class(dataset_type):
 
 
 def get_dataLoader(cfg):
+    dataset = None
+    dataset_type = cfg.DATASET.TYPE.lower()
+    if dataset_type in ["unaligned"]:
+        dataset = get_dataset_class(cfg)(cfg)
+    else:
+        raise NotImplementedError("dataloader {} is not implemented".format(dataset_type))
+    return DataLoader(dataset, 
+                      batch_size=cfg.DATALOADER.BATCH_SIZE,
+                      shuffle=cfg.DATALOADER.SHUFFLE, 
+                      num_workers=cfg.DATALOADER.NUM_WORKERS)

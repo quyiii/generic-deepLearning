@@ -1,6 +1,7 @@
 import torch
 import itertools
 import torch.nn as nn
+from collections import OrderedDict
 from .cycle_gan_nets import get_G, get_D
 from lib.solver import get_loss_class, get_optim
 from lib.util import ImagePool
@@ -155,6 +156,14 @@ class CycleGan(nn.Module):
         self.backward_D_B()
         self.optimizer_D.step()
         return loss
+
+    def get_current_visuals(self):
+        """return current images"""
+        visual_ret = OrderedDict()
+        for name in  self.visual_names:
+            if isinstance(name, str):
+                visual_ret[name] = getattr(self, name)
+        return visual_ret
 
     def eval(self):
         for name in self.model_names:

@@ -7,7 +7,7 @@ import glob
 class Saver(object):
     def __init__(self, cfg):
         self.cfg = cfg
-        self.directory = os.path.join('experiments', cfg.TASK_NAME, cfg.MODEL.NAME, cfg.DATASET.NAME)
+        self.directory = os.path.join('run', cfg.TASK_NAME, cfg.MODEL.NAME, cfg.DATASET.NAME)
         # get sorted list of files with according directory and name
         self.experiments = sorted(glob.glob(os.path.join(self.directory, 'experiment_*')))
         experiment_id = len(self.experiments) if self.experiments else 0

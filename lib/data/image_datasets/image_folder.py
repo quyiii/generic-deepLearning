@@ -15,6 +15,11 @@ def is_image(file_name):
 def get_image_paths(dir, max_size=float('inf')):
     image_paths = []
     assert os.path.isdir(dir)
+    # os.walk 遍历并输出指定目录下的所有子目录以及文件 返回三元组(root dirs files)
+    # root 当前正在遍历的这个文件夹的地址
+    # dirs 一个list 该文件夹下所有目录的名字 deep=1
+    # files 一个list 该文件夹下所有文件的名字 deep=1
+    # 遍历顺序在默认情况下 从输入的目录开始
     for root, _, fnames in sorted(os.walk(dir)):
         for fname in fnames:
             if is_image(fname):
