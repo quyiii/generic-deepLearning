@@ -1,6 +1,6 @@
 import os
 import random
-from .image_folder import get_image_paths, get_image, get_transform
+from .transform import get_image_paths, get_image, get_transform
 from lib.data import BaseDataset
 
 class UnalignedDataset(BaseDataset):
