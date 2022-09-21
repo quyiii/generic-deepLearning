@@ -1,3 +1,5 @@
+TASK_NAME: 'image_style_transform'
+
 MODEL:
   NAME: 'cycle_gan'
   DEVICE: 'cuda'
