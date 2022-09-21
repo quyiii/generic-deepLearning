@@ -5,7 +5,7 @@ from .models import get_model_class
 
 class ModelWrapper(nn.Module):
     def __init__(self, cfg):
-        super(ModelWrapprt, self)
+        super(ModelWrapper, self)
         self.cfg = cfg
         prepare_model()
 

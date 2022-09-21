@@ -3,6 +3,16 @@ import torch
 from tensorboardX import SummaryWriter
 
 class TensorboardSummary(object):
+    """ build a online log to save train details
+    
+    writer = SummaryWriter(file_path)
+    writer.add_scalar('title', value, epoch)
+    writer.close()
+
+    teminal input:
+        tensorboard --logdir=.....file_path...
+    http://localhost:6006/
+    """
     def __init__(self, directory):
         self.directory = directory
     
