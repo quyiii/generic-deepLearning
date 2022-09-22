@@ -11,9 +11,11 @@ def parallel(model, cfg):
     gpu_ids = cfg.MODEL.DEVICE_IDS
     if device == 'cuda':
         assert(torch.cuda.is_available())
-        if len(gpu_ids) == 0:
+        gpu_num = len(gpu_ids)
+        if gpu_num == 0:
             raise RuntimeError('no gpu_ids for run program')
-        model = nn.DataParallel(model, gpu_ids)
+        elif gpu_num >=2:
+            model = nn.DataParallel(model, gpu_ids)
         # to() 输入数字a 默认为cuda:a
         model.to("cuda:{}".format(gpu_ids[0]))
     elif device == 'cpu':

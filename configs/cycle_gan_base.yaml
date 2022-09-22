@@ -36,7 +36,7 @@ INPUT:
 PROCESS:
   RESIZE: True
   CROP: True
-  CROP_SIZE: [256, 256]
+  CROP_SIZE: [224, 224]
   FLIP: False
   FLIP_P: 0.5
   TOTENSOR: True
@@ -44,7 +44,7 @@ PROCESS:
 OUTPUT:
   TYPE: 'image'
   CHANNEL: 3
-  SIZE: [256, 256]
+  SIZE: [224, 224]
 
 DATASET:
   NAME: 'horse2zebra'

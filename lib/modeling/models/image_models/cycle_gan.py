@@ -141,7 +141,7 @@ class CycleGan(nn.Module):
         self.loss_cycle_B = self.criterionCycle(self.rec_B, self.real_B) * lambda_B
 
         self.loss_G = self.loss_G_A + self.loss_G_B + self.loss_cycle_A + self.loss_cycle_B + self.loss_idt_A + self.loss_idt_B
-        loss = self.loss_G.detach().cpu()
+        loss = self.loss_G.cpu().item()
         self.loss_G.backward()
         return loss
 

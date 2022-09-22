@@ -29,4 +29,5 @@ def get_dataLoader(cfg):
     return DataLoader(dataset, 
                       batch_size=cfg.DATALOADER.BATCH_SIZE,
                       shuffle=cfg.DATALOADER.SHUFFLE, 
-                      num_workers=cfg.DATALOADER.NUM_WORKERS)
+                      num_workers=cfg.DATALOADER.NUM_WORKERS,
+                      drop_last=True)

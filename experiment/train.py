@@ -1,7 +1,6 @@
 import os
 import sys
 import torch
-import numpy as np
 import argparse
 from tqdm import tqdm
 
@@ -45,23 +44,27 @@ class Trainer(object):
         self.saver, self.writer = creat_saver_writer(cfg)
 
         self.model = create_model(cfg)
+        if isinstance(self.model, torch.nn.DataParallel):
+            self.model = self.model.module
 
         self.dataloader = get_dataLoader(cfg)
     
     def train(self, epoch):
         # tbar = tqdm(self.dataloader)
-        loss = []
+        losses = []
         for i, data in enumerate(self.dataloader):
-            if isinstance(self.model, torch.nn.DataParallel):
-                self.model = self.model.module
-            loss.append(self.model.optimize_parameters(data))
-        imgs = self.model.base_model.get_current_visuals()
-        # img_a = tensorToPIL(imgs['real_A'])
-        # img_ab = tensorToPIL(imgs['fake_B'])
-        self.writer.add_scalar('loss', np.array(loss).mean(), epoch)
-        if epoch % 10 == 0:
-            self.writer.add_image('real_a', imgs['real_A'].squeeze().cpu(), epoch)
-            self.writer.add_image('fake_b', imgs['fake_B'].squeeze().cpu(), epoch)
+            # for example loss is tensor(1.) shape is size([]) 
+            losses.append(self.model.optimize_parameters(data))
+            if i == 10:
+                # fasten the training
+                break
+        # imgs = self.model.base_model.get_current_visuals()
+        # of course torch.Tensor
+        # print("img type: ", type(imgs['real_A'][0]))
+        self.writer.add_scalar('loss', sum(losses)/len(losses), epoch)
+        # if epoch == 1 or epoch % 5 == 0:
+        #     self.writer.add_image('real_a', imgs['real_A'][0].cpu(), epoch)
+        #     self.writer.add_image('fake_b', imgs['fake_B'][0].cpu(), epoch)
 
 def main():
     args = get_args()
