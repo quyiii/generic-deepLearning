@@ -35,7 +35,9 @@ class CycleGan(nn.Module):
         self.cfg = cfg
         self.device = torch.device("cuda:{}".format(cfg.MODEL.DEVICE_IDS[0])) if self.MODEL.DEVICE.lower() == 'cuda' else torch.device('cpu')
         self.direction = cfg.INPUT.DIRECTION
-        self.is_train = self.cfg.TRAIN.IS_TRAIN
+        self.is_train = cfg.TRAIN.IS_TRAIN
+        self.input_channel = cfg.INPUT.CHANNEL if self.direction else cfg.OUTPUT.CHANNEL
+        self.output_channel = cfg.OUTPUT.CHANNEL if self.direction else cfg.INPUT.CHANNEL
 
         self.loss_names = ['D_A', 'G_A', 'cycle_A', 'idt_A', 'D_B', 'G_B', 'cycle_B', 'idt_B']
 
@@ -47,21 +49,21 @@ class CycleGan(nn.Module):
 
         self.visual_names = visual_names_A + visual_names_B 
 
-        self.netG_A = get_G(cfg.INPUT.CHANNEL, cfg.OUTPUT.CHANNEL, 64, cfg.MODEL.CONSIST.G, cfg.MODEL.NORM,
+        self.netG_A = get_G(self.input_channel, self.output_channel, 64, cfg.MODEL.CONSIST.G, cfg.MODEL.NORM,
                             cfg.MODEL.DROPOUT, cfg.MODEL.INIT, cfg.MODEL.INIT_GAIN, cfg.DEVICE_IDS)
-        self.netG_B = get_G(cfg.OUTPUT.CHANNEL, cfg.INPUT.CHANNEL, 64, cfg.MODEL.CONSIST.G, cfg.MODEL.NORM,
+        self.netG_B = get_G(self.output_channel, self.input_channel, 64, cfg.MODEL.CONSIST.G, cfg.MODEL.NORM,
                             cfg.MODEL.DROPOUT, cfg.MODEL.INIT, cfg.MODEL.INIT_GAIN, cfg.DEVICE_IDS)
 
         if not self.is_train:
             self.model_names = ['G_A', 'G_B']
         else:
             self.model_names = ['G_A', 'G_B', 'D_A', 'D_B'] 
-            self.netD_A = get_D(cfg.OUTPUT.CHANNEL, 64, cfg.MODEL.CONSIST.D, cfg.MODEL.NORM,
+            self.netD_A = get_D(self.output_channel, 64, cfg.MODEL.CONSIST.D, cfg.MODEL.NORM,
                                 cfg.MODEL.INIT, cfg.MODEL.INIT_GAIN, cfg.MODEL.DEVICE_IDS)
-            self.netD_B = get_D(cfg.INPUT.CHANNEL, 64, cfg.MODEL.CONSIST.D, cfg.MODEL.NORM,
+            self.netD_B = get_D(self.input_channel, 64, cfg.MODEL.CONSIST.D, cfg.MODEL.NORM,
                                 cfg.MODEL.INIT, cfg.MODEL.INIT_GAIN, cfg.MODEL.DEVICE_IDS)
             if cfg.LOSS.LAMBDA_IDENTITY > 0:
-                assert(cfg.INPUT.CHANNEL == cfg.OUTPUT.CHANNEL)
+                assert(self.input_channel == self.output_channel)
             
             self.fake_A_pool = ImagePool(cfg.INPUT.POOL_SIZE)
             self.fake_B_pool = ImagePool(cfg.INPUT.POOL_SIZE)

@@ -5,7 +5,7 @@ import torch.nn as nn
 from torch.nn import L1Loss
 
 def get_loss_class(cfg, index):
-    file_name = 'lib.solver.'+cfg.OUTPUT.TYPE.lower()+'_losses'
+    file_name = 'lib.solver.losses'+cfg.OUTPUT.TYPE.lower()+'_losses'
     losseslib = importlib.import_module(file_name)
 
     loss = None

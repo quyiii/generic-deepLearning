@@ -27,6 +27,7 @@ def get_image_paths(dir, max_size=float('inf')):
     return image_paths[:min(len(image_paths), max_size)]
 
 def get_image(path):
+    # W * H
     return Image.open(path).convert('RGB')
 
 def get_params(cfg, size):
