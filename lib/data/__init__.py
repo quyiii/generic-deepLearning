@@ -6,7 +6,7 @@ def get_dataset_class(cfg):
     dataset = None
     input_type = cfg.INPUT.TYPE.lower()
     dataset_type = cfg.DATASET.TYPE.lower()
-    file_name = "lib.data." + input_type + "_datasets." + dataset_type
+    file_name = "lib.data." + input_type + "_datasets." + dataset_type + "_dataset"
     datasetlib = importlib.import_module(file_name)
 
     target_dataset_type = dataset_type.replace('_', '').lower() + "dataset"

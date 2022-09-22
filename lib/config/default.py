@@ -15,8 +15,8 @@ _C.MODEL.SEED = 1
 _C.MODEL.PRETRAINED = False
 _C.MODEL.PRETRAIN_PATH = ''
 _C.MODEL.DROPOUT = 0.5
-_C.MODEL.NORM = 'none'
-_C.MODEL.INIT = 'norm'
+_C.MODEL.NORM_TYPE= 'none'
+_C.MODEL.INIT_TYPE = 'normal'
 _C.MODEL.INIT_GAIN = 0.02
 _C.MODEL.CONSIST = CN()
 _C.MODEL.CONSIST.G = 'resnet_9blocks'
@@ -102,7 +102,7 @@ _C.SOLVER.LR_DECAY_ITERS =  50
 _C.TRAIN = CN()
 _C.TRAIN.START_EPOCH = 0
 _C.TRAIN.MAX_EPOCH = 400
-_C.SOLVER.ADD_EPOCH = 0
+_C.TRAIN.ADD_EPOCH = 0
 _C.TRAIN.IS_TRAIN = True
 
 # -----------------------------------------------------------

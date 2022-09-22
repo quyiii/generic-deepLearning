@@ -3,13 +3,13 @@ TASK_NAME: 'image_style_transform'
 MODEL:
   NAME: 'cycle_gan'
   DEVICE: 'cuda'
-  DEVICE_IDS: [0]
+  DEVICE_IDS: [0, 1]
   SEED: 1
   PRETRAINED: False
   PRETRAIN_PATH: ''
   DROPOUT: 0.5
-  NORM: 'batch'
-  INIT: 'norm'
+  NORM_TYPE: 'batch'
+  INIT_TYPE: 'normal'
   INIT_GAIN: 0.02
   CONSIST: 
     G: 'resnet_9blocks'
@@ -24,7 +24,7 @@ LOSS:
 INPUT:
   TYPE: 'image'
   CHANNEL: 3
-  SIZE: [224, 224]
+  SIZE: [286, 286]
   GRAY_MEAN: [0.5]
   GRAY_STD: [0.5]
   MEAN: [0.485, 0.456, 0.406]
@@ -44,12 +44,12 @@ PROCESS:
 OUTPUT:
   TYPE: 'image'
   CHANNEL: 3
-  SIZE: [224, 224]
+  SIZE: [256, 256]
 
 DATASET:
   NAME: 'horse2zebra'
   TYPE: 'unaligned'
-  ROOT_DIR: '/mnt/disk3/quyi/horse2zebra'
+  ROOT_DIR: '/mnt/disk3/quyi/data/horse2zebra'
   MAX_SIZE: 'inf'
   
 DATALOADER:

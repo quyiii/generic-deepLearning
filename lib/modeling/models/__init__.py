@@ -40,27 +40,16 @@ def get_norm_layer(norm_type='none'):
         raise NotImplementedError('normalization layer {} is not implemented'.format(norm_layer))
     return norm_layer
 
-def init_net(net, init_type='normal', init_gain=0.02, device='cuda', gpu_ids=[0]):
-    """Initialize a network: 1. register CPU/GPU device (with multi-GPU support); 2. initialize the network weights
+def init_net(net, init_type='normal', init_gain=0.02):
+    """Initialize a network: initialize the network weights
     Parameters:
         net (network)      -- the network to be initialized
         init_type (str)    -- the name of an initialization method: normal | xavier | kaiming | orthogonal
         gain (float)       -- scaling factor for normal, xavier and orthogonal.
-        gpu_ids (int list) -- which GPUs the network runs on: e.g., 0,1,2
 
     Return an initialized network.
     """
-    if device.lower() == 'cuda':
-        assert(torch.cuda.is_available())
-        if len(gpu_ids) == 0:
-            raise RuntimeError('no gpu_ids for run program')
-        net = nn.DataParallel(net, gpu_ids)
-        # to() 输入数字a 默认为cuda:a
-        net.to("cuda:" + gpu_ids[0])
-    elif device.lower() == 'cpu':
-        net.to('cpu')
-    else: 
-        raise NotImplementedError('no device {}'.format(device))
+    
     init_weights(net, init_type, init_gain)
     return net
 
@@ -84,7 +73,7 @@ def init_weights(net, init_type='normal', init_gain=0.02):
             elif init_type == 'orthogonal':
                 init.orthogonal_(m.weight.data, gain=init_gain)
             else:
-                raise NotImplementedError('initialization mothod {} is not implemented'.format(norm_type))
+                raise NotImplementedError('initialization mothod {} is not implemented'.format(init_type))
             if hasattr(m, 'bias') and m.bias is not None:
                 init.constant_(m.bias.data, 0.0)
         elif classname.find('BatchNorm2d') != -1:

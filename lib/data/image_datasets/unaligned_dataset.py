@@ -14,8 +14,8 @@ class UnalignedDataset(BaseDataset):
         self.dir_A = os.path.join(cfg.DATASET.ROOT_DIR, self.phase+"A")
         self.dir_B = os.path.join(cfg.DATASET.ROOT_DIR, self.phase+"B")
         if cfg.INPUT.TYPE.lower() == 'image':
-            self.A_paths = sorted(get_image_paths(slef.dir_A, float(cfg.DATASET.MAX_SIZE)))
-            self.B_paths = sorted(get_image_paths(slef.dir_B, float(cfg.DATASET.MAX_SIZE)))
+            self.A_paths = sorted(get_image_paths(self.dir_A, float(cfg.DATASET.MAX_SIZE)))
+            self.B_paths = sorted(get_image_paths(self.dir_B, float(cfg.DATASET.MAX_SIZE)))
             self.A_size = len(self.A_paths)
             self.B_size = len(self.B_paths)
             # AtoB

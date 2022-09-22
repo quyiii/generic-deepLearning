@@ -43,7 +43,11 @@ def get_params(cfg, size):
 
     flip = random.random() > cfg.PROCESS.FLIP_P
     return {'crop_pos': (x, y), 'flip': flip}
- 
+
+def tensorToPIL(img_tensor):
+    toPIL = transforms.ToPILImage()
+    return toPIL(img_tensor)
+
 def get_transform(cfg, params=None, grayscale=False,
                     method=transforms.InterpolationMode.BICUBIC):
     transform_list = []
@@ -61,9 +65,9 @@ def get_transform(cfg, params=None, grayscale=False,
             transform_list.append(transforms.RandomHorizontalFlip())
         else:
             transform_list.append(transforms.Lambda(lambda img: __flip(img, params['flip'])))
-    if cfg.TOTENSOR:
+    if cfg.PROCESS.TOTENSOR:
         transform_list.append(transforms.ToTensor())
-        if cfg.GRAYSCALE:
+        if grayscale:
             transform_list.append(transforms.Normalize(cfg.INPUT.GRAY_MEAN, cfg.INPUT.GRAY_STD))
         else:
             transform_list.append(transforms.Normalize(cfg.INPUT.MEAN, cfg.INPUT.STD))

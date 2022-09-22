@@ -2,7 +2,7 @@ import torch.nn as nn
 import functools
 from lib.modeling.models import get_norm_layer, init_net
 
-def get_G(input_nc, output_nc, ngf, netG, norm='batch', dropout=0, init_type='normal', init_gain=0.02, gpu_ids=[]):
+def get_G(input_nc, output_nc, ngf, netG, norm='batch', dropout=0, init_type='normal', init_gain=0.02):
     """Create a generator
 
     Parameters:
@@ -27,9 +27,9 @@ def get_G(input_nc, output_nc, ngf, netG, norm='batch', dropout=0, init_type='no
         net = ResnetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, dropout=dropout, n_blocks=6)
     else:
         raise NotImplementedError('generator {} is not implemented'.format(netG))
-    return init_net(net, init_type, init_gain, gpu_ids)
+    return init_net(net, init_type, init_gain)
 
-def get_D(input_nc, ndf, n_layers_D=3, norm='batch', init_type='normal', init_gain=0.02, gpu_ids=[]):
+def get_D(input_nc, ndf, n_layers_D=3, norm='batch', init_type='normal', init_gain=0.02):
     """Create a discriminator
 
     Parameters:
@@ -48,7 +48,7 @@ def get_D(input_nc, ndf, n_layers_D=3, norm='batch', init_type='normal', init_ga
     norm_layer = get_norm_layer(norm_type=norm)
     
     net = NLayerDiscriminator(input_nc, ndf, n_layers=n_layers_D, norm_layer=norm_layer)
-    return init_net(net, init_type, init_gain, gpu_ids)
+    return init_net(net, init_type, init_gain)
     
 
 class ResnetGenerator(nn.Module):
@@ -74,15 +74,15 @@ class ResnetGenerator(nn.Module):
         # nn.ReflectionPad2d 镜像填充图片边缘 使得卷积后h w不变
         # nn.RELU(True) -> inplace = True 通过RELU后input变True不变False
         model = [nn.ReflectionPad2d(3),
-                 nn.Conv2d(input_nc, nfg, kernel_size=7, padding=0, bias=use_bias),
-                 norm_layer(nfg),
+                 nn.Conv2d(input_nc, ngf, kernel_size=7, padding=0, bias=use_bias),
+                 norm_layer(ngf),
                  nn.ReLU(True)]
 
         n_downsampling = n_upsampling = 2
         # add n downsampling layers
         for i in range(n_downsampling):
             mult = 2 ** i
-            model += [nn.Conv2d(ngf * mult, nfg * mult * 2, kernel_size=3,
+            model += [nn.Conv2d(ngf * mult, ngf * mult * 2, kernel_size=3,
                                 stride=2, padding=1, bias=use_bias),
                       norm_layer(ngf * mult * 2),
                       nn.ReLU(True)]
@@ -114,6 +114,10 @@ class ResnetGenerator(nn.Module):
         model += [nn.Tanh()]
 
         self.model = nn.Sequential(*model)
+
+    def forward(self, input):
+        """Standard forward"""
+        return self.model(input)
 
 
 class ResnetBlock(nn.Module):

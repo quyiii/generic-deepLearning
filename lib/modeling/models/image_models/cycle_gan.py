@@ -32,8 +32,9 @@ loss idt_B: lambda_identity * ||G_B(A) - A|| * lambda_A
 
 class CycleGan(nn.Module):
     def __init__(self, cfg):
+        super(CycleGan, self).__init__()
         self.cfg = cfg
-        self.device = torch.device("cuda:{}".format(cfg.MODEL.DEVICE_IDS[0])) if self.MODEL.DEVICE.lower() == 'cuda' else torch.device('cpu')
+        self.device = torch.device("cuda:{}".format(cfg.MODEL.DEVICE_IDS[0])) if cfg.MODEL.DEVICE.lower() == 'cuda' else torch.device('cpu')
         self.direction = cfg.INPUT.DIRECTION
         self.is_train = cfg.TRAIN.IS_TRAIN
         self.input_channel = cfg.INPUT.CHANNEL if self.direction else cfg.OUTPUT.CHANNEL
@@ -49,19 +50,19 @@ class CycleGan(nn.Module):
 
         self.visual_names = visual_names_A + visual_names_B 
 
-        self.netG_A = get_G(self.input_channel, self.output_channel, 64, cfg.MODEL.CONSIST.G, cfg.MODEL.NORM,
-                            cfg.MODEL.DROPOUT, cfg.MODEL.INIT, cfg.MODEL.INIT_GAIN, cfg.DEVICE_IDS)
-        self.netG_B = get_G(self.output_channel, self.input_channel, 64, cfg.MODEL.CONSIST.G, cfg.MODEL.NORM,
-                            cfg.MODEL.DROPOUT, cfg.MODEL.INIT, cfg.MODEL.INIT_GAIN, cfg.DEVICE_IDS)
+        self.netG_A = get_G(self.input_channel, self.output_channel, 64, cfg.MODEL.CONSIST.G, cfg.MODEL.NORM_TYPE,
+                            cfg.MODEL.DROPOUT, cfg.MODEL.INIT_TYPE, cfg.MODEL.INIT_GAIN)
+        self.netG_B = get_G(self.output_channel, self.input_channel, 64, cfg.MODEL.CONSIST.G, cfg.MODEL.NORM_TYPE,
+                            cfg.MODEL.DROPOUT, cfg.MODEL.INIT_TYPE, cfg.MODEL.INIT_GAIN)
 
         if not self.is_train:
             self.model_names = ['G_A', 'G_B']
         else:
             self.model_names = ['G_A', 'G_B', 'D_A', 'D_B'] 
-            self.netD_A = get_D(self.output_channel, 64, cfg.MODEL.CONSIST.D, cfg.MODEL.NORM,
-                                cfg.MODEL.INIT, cfg.MODEL.INIT_GAIN, cfg.MODEL.DEVICE_IDS)
-            self.netD_B = get_D(self.input_channel, 64, cfg.MODEL.CONSIST.D, cfg.MODEL.NORM,
-                                cfg.MODEL.INIT, cfg.MODEL.INIT_GAIN, cfg.MODEL.DEVICE_IDS)
+            self.netD_A = get_D(self.output_channel, 64, cfg.MODEL.CONSIST.D, cfg.MODEL.NORM_TYPE,
+                                cfg.MODEL.INIT_TYPE, cfg.MODEL.INIT_GAIN)
+            self.netD_B = get_D(self.input_channel, 64, cfg.MODEL.CONSIST.D, cfg.MODEL.NORM_TYPE,
+                                cfg.MODEL.INIT_TYPE, cfg.MODEL.INIT_GAIN)
             if cfg.LOSS.LAMBDA_IDENTITY > 0:
                 assert(self.input_channel == self.output_channel)
             
@@ -78,7 +79,7 @@ class CycleGan(nn.Module):
     def set_input(self, data):
         self.real_A = data['A' if self.direction else 'B'].to(self.device)
         self.real_B = data['B' if self.direction else 'A'].to(self.device)
-        self.iamge_paths = data['A_paths' if self.direction else 'B_paths']
+        self.iamge_paths = data['A_path' if self.direction else 'B_path']
 
     def forward(self):
         self.fake_B = self.netG_A(self.real_A)
