@@ -40,7 +40,7 @@ class Saver(object):
         if is_best:
             # best_perform: loss 1.0 or acc 1.0 ...
             best_perform_val = self.get_best_perform_val(state['best_perform'])
-            with open(os.path.join(self.experiment_dir, 'best_perform.txt'), w) as f:
+            with open(os.path.join(self.experiment_dir, 'best_perform.txt'), 'w') as f:
                 f.write(state['best_perform'])
             model_best_name = os.path.join(self.directory, "mdoel_best.pth.tar")
             if self.experiments:
@@ -61,6 +61,8 @@ class Saver(object):
                         shutil.copyfile(filename, model_best_name)
             else:
                 shutil.copyfile(filename, model_best_name)
+
+# need add best_perform.txt
 
     def save_experiment_config(self):
         logfile = os.path.join(self.experiment_dir, 'config.txt')

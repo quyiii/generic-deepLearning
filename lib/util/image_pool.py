@@ -29,6 +29,7 @@ class ImagePool():
         """
         if self.pool_size == 0:
             return images
+        # print(images.shape)
         return_images = []
         for image in images:
             image = torch.unsqueeze(image.data, 0)

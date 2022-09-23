@@ -1,3 +1,4 @@
+import pdb
 import torch
 import itertools
 import torch.nn as nn
@@ -78,6 +79,8 @@ class CycleGan(nn.Module):
 
     def set_input(self, data):
         self.real_A = data['A' if self.direction else 'B'].to(self.device)
+        # print(self.real_A.shape)
+        # pdb.set_trace()
         self.real_B = data['B' if self.direction else 'A'].to(self.device)
         self.iamge_paths = data['A_path' if self.direction else 'B_path']
 
@@ -102,12 +105,12 @@ class CycleGan(nn.Module):
         pred_real = netD(real)
         loss_D_real = self.criterionGAN(pred_real, True)
         # fake
-        pred_fake = netD(fake)
+        pred_fake = netD(fake.detach())
         loss_D_fake = self.criterionGAN(pred_fake, False)
         # combine loss
         loss_D = (loss_D_real + loss_D_fake) * 0.5
         loss_D.backward()
-        return loss_D
+        return loss_D.item()
 
     def backward_D_A(self):
         fake_B = self.fake_B_pool.query(self.fake_B)
