@@ -40,7 +40,7 @@ def get_start_epoch(cfg):
 class Trainer(object):
     def __init__(self, cfg):
         self.cfg = cfg
-
+        self.is_best = True
         self.saver, self.writer = creat_saver_writer(cfg)
 
         self.model = create_model(cfg)
