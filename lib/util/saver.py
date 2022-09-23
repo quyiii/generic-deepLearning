@@ -4,8 +4,6 @@ import shutil
 from collections import OrderedDict
 import glob
 
-import experiment
-
 class Saver(object):
     def __init__(self, cfg):
         self.cfg = cfg
@@ -36,7 +34,7 @@ class Saver(object):
         else:
             return float(best_perform[pos+1:])
 
-    def save_chekpoint(self, state, is_best=True, is_big_better=True, filename='checkpoint.pth.tar'):
+    def save_chekpoint(self, state, is_best=True, filename='checkpoint.pth.tar'):
         filename = os.path.join(self.experiment_dir, filename)
         torch.save(state, filename)
         if is_best:
@@ -46,6 +44,7 @@ class Saver(object):
                 f.write(state['best_perform'])
             model_best_name = os.path.join(self.directory, "mdoel_best.pth.tar")
             if self.experiments:
+                is_big_better = True if len(self.cfg.METRIC.NAME) else False
                 previous_vals = [0.0] if is_big_better else [float('inf')]
                 for experiment in self.experiments:
                     best_path = os.path.join(experiment, 'best_perform.txt')

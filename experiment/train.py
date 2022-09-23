@@ -10,6 +10,7 @@ from lib.util import creat_saver_writer
 from lib.solver import get_loss_class
 from lib.modeling import create_model
 from lib.data import get_dataLoader
+from lib.evaluation import get_averageMeter
 from lib.data.image_datasets import tensorToPIL
 
 def get_args():
@@ -42,6 +43,8 @@ class Trainer(object):
         self.cfg = cfg
         self.is_best = True
         self.saver, self.writer = creat_saver_writer(cfg)
+        self.best = 0.0 if len(cfg.METRIC.NAME) else float('inf')
+        self.loss = get_averageMeter()
 
         self.model = create_model(cfg)
         if isinstance(self.model, torch.nn.DataParallel):
@@ -51,20 +54,27 @@ class Trainer(object):
     
     def train(self, epoch):
         # tbar = tqdm(self.dataloader)
-        losses = []
         for i, data in enumerate(self.dataloader):
             # for example loss is tensor(1.) shape is size([]) 
-            losses.append(self.model.optimize_parameters(data))
+            self.loss.update(self.model.optimize_parameters(data))
             if i == 10:
                 # fasten the training
                 break
         # imgs = self.model.base_model.get_current_visuals()
         # of course torch.Tensor
         # print("img type: ", type(imgs['real_A'][0]))
-        self.writer.add_scalar('loss', sum(losses)/len(losses), epoch)
+        self.writer.add_scalar('loss', self.loss.avg, epoch)
         # if epoch == 1 or epoch % 5 == 0:
         #     self.writer.add_image('real_a', imgs['real_A'][0].cpu(), epoch)
         #     self.writer.add_image('fake_b', imgs['fake_B'][0].cpu(), epoch)
+        if self.loss.avg < self.best:
+            is_best = True
+            self.best = self.loss.avg
+            self.saver.save_chekpoint({
+                'epoch': epoch,
+                'state_dict': self.model.state_dict(),
+                'best_perform': 'loss {}'.format(self.loss.avg)
+            }, is_best)
 
 def main():
     args = get_args()

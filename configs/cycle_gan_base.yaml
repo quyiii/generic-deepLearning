@@ -73,6 +73,9 @@ TRAIN:
   ADD_EPOCH: 0
   IS_TRAIN: True
 
+METRIC:
+  NAME: []
+
 TEST:
   BATCH_SIZE: 128
   WEIGHT: ""
