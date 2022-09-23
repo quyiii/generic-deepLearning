@@ -44,6 +44,7 @@ class Saver(object):
             best_perform_val = self.get_best_perform_val(state['best_perform'])
             with open(os.path.join(self.experiment_dir, 'best_perform.txt'), w) as f:
                 f.write(state['best_perform'])
+            model_best_name = os.path.join(self.directory, "mdoel_best.pth.tar")
             if self.experiments:
                 previous_vals = [0.0] if is_big_better else [float('inf')]
                 for experiment in self.experiments:
@@ -54,11 +55,13 @@ class Saver(object):
                 if is_big_better:
                     previous_best = max(previous_vals)
                     if best_perform_val > previous_best:
-                        
-
-
-
-            
+                        shutil.copyfile(filename, model_best_name)
+                else:
+                    previous_best = min(previous_vals)
+                    if best_perform_val < previous_best:
+                        shutil.copyfile(filename, model_best_name)
+            else:
+                shutil.copyfile(filename, model_best_name)
 
     def save_experiment_config(self):
         logfile = os.path.join(self.experiment_dir, 'config.txt')
