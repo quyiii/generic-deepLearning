@@ -12,11 +12,11 @@ class Saver(object):
         self.experiments = sorted(glob.glob(os.path.join(self.directory, 'experiment_*')))
         if self.experiments:
             last_experiment = self.experiments[-1]
-            experiment_id = self.get_experiment_id(last_experiment) + 1
+            self.experiment_id = self.get_experiment_id(last_experiment) + 1
         else:
-            experiment_id = 0
+            self.experiment_id = 0
         
-        self.experiment_dir = os.path.join(self.directory, 'experiment_{}'.format(experiment_id))
+        self.experiment_dir = os.path.join(self.directory, 'experiment_{}'.format(self.experiment_id))
         if not os.path.exists(self.experiment_dir):
             os.makedirs(self.experiment_dir)
     
@@ -33,6 +33,12 @@ class Saver(object):
             raise RuntimeError("best_perform {} need space".format(best_perform))
         else:
             return float(best_perform[pos+1:])
+
+    def save_best(self, best_perform, checkpoint, best_name):
+        with open(os.path.join(self.directory, 'best_experiment.txt'), 'w') as f:
+            f.write("experiment{}\n".format(self.experiment_id))
+            f.write(best_perform)
+        shutil.copyfile(checkpoint, best_name)
 
     def save_chekpoint(self, state, is_best=True, filename='checkpoint.pth.tar'):
         filename = os.path.join(self.experiment_dir, filename)
@@ -54,15 +60,13 @@ class Saver(object):
                 if is_big_better:
                     previous_best = max(previous_vals)
                     if best_perform_val > previous_best:
-                        shutil.copyfile(filename, model_best_name)
+                        self.save_best(state["best_perform"], filename, model_best_name)
                 else:
                     previous_best = min(previous_vals)
                     if best_perform_val < previous_best:
-                        shutil.copyfile(filename, model_best_name)
+                        self.save_best(state["best_perform"], filename, model_best_name)
             else:
-                shutil.copyfile(filename, model_best_name)
-
-# need add best_perform.txt
+                self.save_best(state["best_perform"], filename, model_best_name)
 
     def save_experiment_config(self):
         logfile = os.path.join(self.experiment_dir, 'config.txt')
