@@ -1,4 +1,4 @@
-import numpy as np
+import torch
 
 class AverageMeter(object):
     def __init__(self):
@@ -11,6 +11,8 @@ class AverageMeter(object):
         self.count = 0
 
     def update(self, val, n=1):
+        if isinstance(val, torch.Tensor):
+            val = val.item() 
         self.val = val
         self.sum += val * n
         self.count += n

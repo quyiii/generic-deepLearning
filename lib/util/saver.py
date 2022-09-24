@@ -36,7 +36,7 @@ class Saver(object):
 
     def save_best(self, best_perform, checkpoint, best_name):
         with open(os.path.join(self.directory, 'best_experiment.txt'), 'w') as f:
-            f.write("experiment{}\n".format(self.experiment_id))
+            f.write("experiment_{}\n".format(self.experiment_id))
             f.write(best_perform)
         shutil.copyfile(checkpoint, best_name)
 

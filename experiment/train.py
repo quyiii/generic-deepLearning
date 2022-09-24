@@ -56,7 +56,9 @@ class Trainer(object):
         # tbar = tqdm(self.dataloader)
         for i, data in enumerate(self.dataloader):
             # for example loss is tensor(1.) shape is size([]) 
-            self.loss.update(self.model.optimize_parameters(data))
+            loss = self.model.optimize_parameters(data)
+            # print(type(loss))    float
+            self.loss.update(loss)
             if i == 10:
                 # fasten the training
                 break
