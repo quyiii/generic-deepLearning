@@ -31,6 +31,7 @@ _C.LOSS.NAME = ['gan_loss', 'L1Loss']
 _C.LOSS.LAMBDA_A = 10
 _C.LOSS.LAMBDA_B = 10
 _C.LOSS.LAMBDA_IDENTITY = 0.5
+_C.LOSS.LAMBDA_L1 = 100.0
 
 # -----------------------------------------------------------
 # INPUT

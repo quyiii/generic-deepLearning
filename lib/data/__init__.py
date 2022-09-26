@@ -22,7 +22,7 @@ def get_dataset_class(cfg):
 def get_dataLoader(cfg):
     dataset = None
     dataset_type = cfg.DATASET.TYPE.lower()
-    if dataset_type in ["unaligned"]:
+    if dataset_type in ["unaligned", "aligned"]:
         dataset = get_dataset_class(cfg)(cfg)
     else:
         raise NotImplementedError("dataloader {} is not implemented".format(dataset_type))

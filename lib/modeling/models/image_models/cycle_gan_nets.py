@@ -100,7 +100,7 @@ class ResnetGenerator(nn.Module):
             # ConvTranspose2d 转置卷积/逆卷积  Conv(A) = B   ConvTranspose(B) = A
             # 卷积计算公式 W = (W - k + 2P)/S + 1
             # 逆卷积计算公式 W = (W - 1)*S - 2P + k + output_padding  
-            # Stride Padding kernel_size与原来同  
+            # Stride Padding kernel_size与原来同  这样可让(W - 1)*S - 2P + k = [(w-k+2p)/s]*s
             # output_ padding用于调控非整除情况！！！ 补上被舍去的
             model += [nn.ConvTranspose2d(ngf * mult, int(ngf * mult / 2),
                                          kernel_size=3, stride=2,
