@@ -2,7 +2,6 @@ from .lr_scheduler import get_scheduler
 from .optim import get_optim
 import importlib
 import torch.nn as nn 
-from torch.nn import L1Loss
 
 def get_loss_class(cfg, index):
     file_name = 'lib.solver.losses.'+cfg.OUTPUT.TYPE.lower()+'_losses'

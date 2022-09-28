@@ -8,8 +8,8 @@ MODEL:
   PRETRAINED: False
   PRETRAIN_PATH: ''
   DROPOUT: 0
-  NORM_TYPE: 'batch'
-  INIT_TYPE: 'normal'
+  NORM: 'batch'
+  INIT: 'normal'
   INIT_GAIN: 0.02
   CONSIST: 
     G: 'resnet_9blocks'

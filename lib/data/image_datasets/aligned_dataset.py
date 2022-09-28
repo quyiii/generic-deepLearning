@@ -11,12 +11,13 @@ class AlignedDataset(BaseDataset):
 
     def __init__(self, cfg):
         super(AlignedDataset, self).__init__(cfg)
+        self.direction = cfg.INPUT.DIRECTION
         self.phase = "train" if cfg.TRAIN.IS_TRAIN else "test"
         self.dir_AB = os.path.join(cfg.DATASET.ROOT_DIR, self.phase)
         self.AB_paths = sorted(get_image_paths(self.dir_AB, float(self.DATASET.MAX_SIZE)))
         assert(cfg.INPUT.SIZE >= cfg.PROCESS.CROP_SIZE)
-        self.input_nc = cfg.INPUT.CHANNEL
-        self.output_nc = cfg.OUTPUT.CHANNEL
+        self.input_nc = cfg.INPUT.CHANNEL if self.direction else cfg.OUTPUT.CHANNEL
+        self.output_nc = cfg.OUTPUT.CHANNEL if self.direction else cfg.INPUT.CHANNEL
 
     def __getitem__(self, index):
         AB_path = self.AB_paths[index]
@@ -35,7 +36,7 @@ class AlignedDataset(BaseDataset):
 
         A = A_transform(A)
         B = B_transform(B)
-        return {'A':A, 'B':B, 'AB_path': AB_path}
+        return {'A':A, 'B':B, 'AB_path': AB_path} if self.direction else {'A':B, 'B':A, 'AB_path': AB_path}
 
     def __init__(self):
         return len(self.AB_paths)
