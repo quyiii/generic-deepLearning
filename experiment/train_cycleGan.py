@@ -63,7 +63,7 @@ class Trainer(object):
             loss = self.model.optimize_parameters(data)
             # print(type(loss))    float
             self.loss.update(loss)
-            if i == 10:
+            if i == 100:
                 # fasten the training
                 break
         # imgs = self.model.base_model.get_current_visuals()
@@ -81,15 +81,20 @@ class Trainer(object):
                 'state_dict': self.model.state_dict(),
                 'best_perform': 'loss {}'.format(self.loss.avg)
             }, is_best)
+        return self.loss.avg
 
 def main():
     args = get_args()
     get_cfg(args)
     print(cfg)
     trainer = Trainer(cfg)
-    tbar = tqdm(range(cfg.TRAIN.START_EPOCH, cfg.TRAIN.MAX_EPOCH + cfg.TRAIN.ADD_EPOCH))
+    start_epoch = cfg.TRAIN.START_EPOCH
+    total_epoch = cfg.TRAIN.MAX_EPOCH + cfg.TRAIN.ADD_EPOCH
+    tbar = tqdm(range(start_epoch, total_epoch))
     for epoch in tbar:
-        trainer.train(epoch)
+        tbar.set_description('epoch: {}/{}'.format(epoch+1, total_epoch))
+        loss = trainer.train(epoch)
+        tbar.set_postfix(loss='{}'.format(loss))
     trainer.writer.close()
 
 if __name__ == '__main__':
