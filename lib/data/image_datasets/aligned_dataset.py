@@ -14,7 +14,7 @@ class AlignedDataset(BaseDataset):
         self.direction = cfg.INPUT.DIRECTION
         self.phase = "train" if cfg.TRAIN.IS_TRAIN else "test"
         self.dir_AB = os.path.join(cfg.DATASET.ROOT_DIR, self.phase)
-        self.AB_paths = sorted(get_image_paths(self.dir_AB, float(self.DATASET.MAX_SIZE)))
+        self.AB_paths = sorted(get_image_paths(self.dir_AB, float(cfg.DATASET.MAX_SIZE)))
         assert(cfg.INPUT.SIZE >= cfg.PROCESS.CROP_SIZE)
         self.input_nc = cfg.INPUT.CHANNEL if self.direction else cfg.OUTPUT.CHANNEL
         self.output_nc = cfg.OUTPUT.CHANNEL if self.direction else cfg.INPUT.CHANNEL
@@ -30,13 +30,17 @@ class AlignedDataset(BaseDataset):
         A = AB.crop((w2, 0, w, h))
         # B is left one(ground truth) 
         B = AB.crop((0, 0, w2, h))
+        if not self.direction:
+            temp = A
+            A = B
+            B = temp
         transform_params = get_params(self.cfg, A.size)
         A_transform = get_transform(self.cfg, transform_params, grayscale=(self.input_nc == 1))
         B_transform = get_transform(self.cfg, transform_params, grayscale=(self.output_nc == 1))
 
         A = A_transform(A)
         B = B_transform(B)
-        return {'A':A, 'B':B, 'AB_path': AB_path} if self.direction else {'A':B, 'B':A, 'AB_path': AB_path}
+        return {'A':A, 'B':B, 'AB_path': AB_path}
 
-    def __init__(self):
+    def __len__(self):
         return len(self.AB_paths)

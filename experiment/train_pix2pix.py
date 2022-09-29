@@ -63,7 +63,7 @@ class Trainer(object):
             loss = self.model.optimize_parameters(data)
             # print(type(loss))    float
             self.loss.update(loss)
-            if i == 10:
+            if i == 100:
                 # fasten the training
                 break
         # imgs = self.model.base_model.get_current_visuals()

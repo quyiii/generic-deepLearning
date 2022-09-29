@@ -3,7 +3,7 @@ TASK_NAME: 'image_style_transform'
 MODEL:
   NAME: 'conditional_gan'
   DEVICE: 'cuda'
-  DEVICE_IDS: [0, 1]
+  DEVICE_IDS: [0]
   SEED: 1
   PRETRAINED: False
   PRETRAIN_PATH: ''
@@ -64,13 +64,13 @@ SOLVER:
   LR_SCHEDULER: 'linear'
   BASE_LR: 0.0002
   # lr_init_epoch + lr_decay_epoch = max_epoch
-  LR_DECAY_EPOCH: 200
-  LR_INIT_EPOCH: 200
+  LR_DECAY_EPOCH: 100
+  LR_INIT_EPOCH: 100
   LR_DECAY_ITERS:  50
 
 TRAIN:
-  START_EPOCH: 1
-  MAX_EPOCH: 400
+  START_EPOCH: 0
+  MAX_EPOCH: 200
   ADD_EPOCH: 0
   IS_TRAIN: True
 
