@@ -146,8 +146,9 @@ class UnetSkipConnectionBlock(nn.Module):
 # It's a patchGan
 # default 3layer with 70*70 receptive field
 # the receptive field : rn = rn-1 * kn - (rn-1 - multi(s1,sn-1))*(kn - 1) = rn-1 + (kn - 1) * multi(s1, sn-1)
-# overlap = (rn-1 - sn-1)*(kn - 1)  (rn-1 - sn-1):overlap size(layer_n-1 part recept rn-1 and multi from stride1 to stride_n-1, so every two parts has overlap rn-1 - multi(s1,sn-1))
-# (kn - 1):overlap num(layer_n conv layer_n-1 by kernel_n, so there are kn - 1 layer_n-1 parts-interval means overlap)
+# overlap = (rn-1 - sn-1)*(kn - 1)  
+# (rn-1 - sn-1):overlap size(layer_n-1 part recept rn-1 and multi from stride1 to stride_n-1, so every two parts has overlap rn-1 - multi(s1,sn-1))
+# (kn - 1):overlap num(layer_n conv layer_n-1 by kernel_n, so there are kn - 1 layer_n-1 parts-interval which also means overlap)
 class NLayerDiscriminator(nn.Module):
     def __init__(self, input_nc, ndf=64, n_layers=3, norm_layer=nn.BatchNorm2d):
         super(NLayerDiscriminator, self).__init__()
