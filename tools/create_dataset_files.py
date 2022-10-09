@@ -8,7 +8,7 @@ from tqdm import tqdm
 from collections import Counter
 from random import seed, choice, sample
 
-def create_dataset_files(dataset, karpathy_json_path, image_folder, captions_per_image, min_word_freq, output_folder):
+def create_dataset_files(dataset, karpathy_json_path, image_folder, captions_per_image, min_word_freq, output_folder, max_len, resize):
     """
     Creates input files (.h5 which is a huge file) for training, validation, and test data.
 
@@ -19,6 +19,7 @@ def create_dataset_files(dataset, karpathy_json_path, image_folder, captions_per
     :param min_word_freq: words occuring less frequently than this threshold are binned as <unk>s
     :param output_folder: folder to save files
     :param max_len: don't sample captions longer than this length
+    :param resize: image resize size, such as 256
     """
 
     assert dataset in {'coco', 'flickr8k', 'flickr30k'}
@@ -94,9 +95,61 @@ def create_dataset_files(dataset, karpathy_json_path, image_folder, captions_per
         with h5py.File(os.path.join(output_folder, split + '_IMAGES_' + root_filename + '.hdf5'), 'a') as h:
             # sample number
             h.attrs['captions_per_image'] = captions_per_image
+            # create dataset inside .hdf5 to store image
+            images = h.create_dataset('images', (len(impaths), 3, 256, 256), dtype='uint8')
+
+            print("Reading {} images and captions, storing to file".format(split))
+
+            enc_captions = []
+            caplens = []
+
+            # store image, sample captions and encode
+            for i, path in enumerate(tqdm(impaths)):
+                # sample captions_per_image captions for each image
+                if len(imcaps[i]) < captions_per_image:
+                    # random.choice: choose a random element in sequence
+                    # for _ in range(n): just for circulate n times 
+                    # use choice and for _ to let len(imcaps) == captions_per_image
+                    captions = imcaps[i] + [choice(imcaps[i]) for _ in range(captions_per_image - len(imcaps[i]))]
+                else:
+                    captions = sample(imcaps[i], k=captions_per_image)
+
+                assert len(captions) == captions_per_image
+
+                # store image
+                img = imread(path)
+                if len(img.shape) == 2:
+                    # h,w -> h,w,c
+                    img = img[:, :, np.newaxis]
+                    img = np.concatenate([img, img, img], axis=2)
+                img = imresize(img, (256, 256))
+                img = img.transpose(2, 0, 1)
+                assert img.shape == (3, 256, 256)
+                assert np.max(img) <= 255
+                # save image to .hdf5
+                images[i] = img
+
+                # encode images
+                for j, c in enumerate(captions):
+                    # encode caption
+                    # dict.get(key, replace) find key's value in dict, if not find output replace
+                    enc_c = [word_map['<start>']] + [word_map.get(word, word_map['<unk>']) for word in c + \
+                             word_map['<end>']] + [word_map['<pad>']] * (max_len - len(c))
+                    
+                    c_len = len(c) + 2
+
+                    enc_captions.append(enc_c)
+                    caplens.append(c_len)
+            
+            assert images.shape[0] * captions_per_image == len(enc_captions) == len(caplens)
+
+            with open(os.path.join(output_folder, split + '_CAPTIONS_' + root_filename + '.json'), 'w') as j:
+                json.dump(enc_captions, j)
+            
+            with open(os.path.join(output_folder, split + '_CAPLENS_' + root_filename + '.json'), 'w') as j:
+                json.dump(caplens, j)
 
 
-
-
+ 
 if __name__ == "__main__":
     imread("xxx")
