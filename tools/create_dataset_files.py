@@ -18,8 +18,14 @@ def create_dataset_files(dataset, karpathy_json_path, image_folder, captions_per
     :param captions_per_image: number of captions to sample per image
     :param min_word_freq: words occuring less frequently than this threshold are binned as <unk>s
     :param output_folder: folder to save files
-    :param max_len: don't sample captions longer than this length
+    :param max_len: don't sample caption, which is longer than this length
     :param resize: image resize size, such as 256
+    
+    get:
+    wordmap.json: store the wordmap -> word to num
+    ..._images.hdf5: store the images and captions per image
+    ..._captions.json: store the encoder captions
+    ..._caplen.json: store each caption len add <start> and <end> except <pad> 
     """
 
     assert dataset in {'coco', 'flickr8k', 'flickr30k'}
@@ -79,10 +85,12 @@ def create_dataset_files(dataset, karpathy_json_path, image_folder, captions_per
     word_map['<pad>'] = 0
 
     # create root name for all output files
-    root_filename = dataset + '_' + str(captions_per_image) + \
-                    '_caps_per_img_' + str(min_word_freq) + '_min_word_freq'
-
-    with open(os.path.join(output_folder, 'WORDMAP_' + root_filename + '.json'), 'w') as j:
+    root_folder = str(captions_per_image) + '_caps_per_img_' + \
+                  str(min_word_freq) + '_min_word_freq'
+    output_folder = os.path.join(output_folder, root_folder)
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+    with open(os.path.join(output_folder, 'WORDMAP.json'), 'w') as j:
         # write word_map to file as json
         json.dump(word_map, j)
     
@@ -92,11 +100,11 @@ def create_dataset_files(dataset, karpathy_json_path, image_folder, captions_per
                                    (val_image_paths, val_image_captions, 'VAL'),
                                    (test_image_paths, test_image_captions, 'TEST')]:
         # a means write at end
-        with h5py.File(os.path.join(output_folder, split + '_IMAGES_' + root_filename + '.hdf5'), 'a') as h:
+        with h5py.File(os.path.join(output_folder, split + '_IMAGES.hdf5'), 'a') as h:
             # sample number
             h.attrs['captions_per_image'] = captions_per_image
             # create dataset inside .hdf5 to store image
-            images = h.create_dataset('images', (len(impaths), 3, 256, 256), dtype='uint8')
+            images = h.create_dataset('images', (len(impaths), 3, resize, resize), dtype='uint8')
 
             print("Reading {} images and captions, storing to file".format(split))
 
@@ -122,9 +130,9 @@ def create_dataset_files(dataset, karpathy_json_path, image_folder, captions_per
                     # h,w -> h,w,c
                     img = img[:, :, np.newaxis]
                     img = np.concatenate([img, img, img], axis=2)
-                img = imresize(img, (256, 256))
+                img = imresize(img, (resize, resize))
                 img = img.transpose(2, 0, 1)
-                assert img.shape == (3, 256, 256)
+                assert img.shape == (3, resize, resize)
                 assert np.max(img) <= 255
                 # save image to .hdf5
                 images[i] = img
@@ -133,8 +141,8 @@ def create_dataset_files(dataset, karpathy_json_path, image_folder, captions_per
                 for j, c in enumerate(captions):
                     # encode caption
                     # dict.get(key, replace) find key's value in dict, if not find output replace
-                    enc_c = [word_map['<start>']] + [word_map.get(word, word_map['<unk>']) for word in c + \
-                             word_map['<end>']] + [word_map['<pad>']] * (max_len - len(c))
+                    enc_c = [word_map['<start>']] + [word_map.get(word, word_map['<unk>']) for word in c] + \
+                            [word_map['<end>']] + [word_map['<pad>']] * (max_len - len(c))
                     
                     c_len = len(c) + 2
 
@@ -143,10 +151,10 @@ def create_dataset_files(dataset, karpathy_json_path, image_folder, captions_per
             
             assert images.shape[0] * captions_per_image == len(enc_captions) == len(caplens)
 
-            with open(os.path.join(output_folder, split + '_CAPTIONS_' + root_filename + '.json'), 'w') as j:
+            with open(os.path.join(output_folder, split + '_CAPTIONS.json'), 'w') as j:
                 json.dump(enc_captions, j)
             
-            with open(os.path.join(output_folder, split + '_CAPLENS_' + root_filename + '.json'), 'w') as j:
+            with open(os.path.join(output_folder, split + '_CAPLENS.json'), 'w') as j:
                 json.dump(caplens, j)
 
 
