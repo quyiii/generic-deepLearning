@@ -25,7 +25,24 @@ class CaptionDataset(BaseDataset):
         with open(caplens_path, 'r') as j:
             self.caplens = json.load(j)
 
-        self.dataset_size = len(self.captions) 
+        self.captions_len = len(self.captions) 
         
         self.transform = get_transform(cfg, params=None, grayscale=(self.INPUT.CHANNEL==1))
+
+    def __getitem__(self, index):
+        img = torch.FloatTensor(self.imgs[index // self.cpi] / 255.)
+        if self.transform is not None:
+            img = self.transform(img)
         
+        caption = torch.LongTensor(self.captions[i])
+        caplen = torch.LongTensor([self.caplens[i]])
+
+        if self.split is 'TRAIN':
+            return img, caption, caplen
+        else:
+            # return all the captions of one img
+            all_captions = torch.LongTensor(self.captions[((index // self.cpi) * self.cpi):(((index // self.cpi) * self.cpi) + self.cpi)])
+            return img, caption, caplen, all_captions
+    
+    def __len__(self):
+        return self.captions_len

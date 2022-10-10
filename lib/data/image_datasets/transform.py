@@ -74,7 +74,7 @@ def get_transform(cfg, params=None, grayscale=False,
             transform_list.append(transforms.Normalize(cfg.INPUT.GRAY_MEAN, cfg.INPUT.GRAY_STD))
         else:
             transform_list.append(transforms.Normalize(cfg.INPUT.MEAN, cfg.INPUT.STD))
-    return transforms.Compose(transform_list)
+    return transforms.Compose(transform_list) if len(transform_list) else None
 
 def __crop(img, pos, size):
     ow, oh = img.size
