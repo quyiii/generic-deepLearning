@@ -41,6 +41,7 @@ PROCESS:
   FLIP: False
   FLIP_P: 0.5
   TOTENSOR: True
+  NORM: True
 
 OUTPUT:
   TYPE: 'image'

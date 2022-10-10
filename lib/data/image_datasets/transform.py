@@ -53,6 +53,7 @@ def get_transform(cfg, params=None, grayscale=False,
                     method=transforms.InterpolationMode.BICUBIC):
     transform_list = []
     if grayscale:
+        # Convert image to grayscale
         transform_list.append(transforms.Grayscale(1))
     if cfg.PROCESS.RESIZE:
         transform_list.append(transforms.Resize(cfg.INPUT.SIZE, method))
@@ -68,6 +69,7 @@ def get_transform(cfg, params=None, grayscale=False,
             transform_list.append(transforms.Lambda(lambda img: __flip(img, params['flip'])))
     if cfg.PROCESS.TOTENSOR:
         transform_list.append(transforms.ToTensor())
+    if cfg.PROCESS.NORM:
         if grayscale:
             transform_list.append(transforms.Normalize(cfg.INPUT.GRAY_MEAN, cfg.INPUT.GRAY_STD))
         else:

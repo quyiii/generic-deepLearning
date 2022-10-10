@@ -34,12 +34,13 @@ INPUT:
   POOL_SIZE: 50
 
 PROCESS:
-  RESIZE: True
-  CROP: True
+  RESIZE: False
+  CROP: False
   CROP_SIZE: [224, 224]
   FLIP: False
   FLIP_P: 0.5
-  TOTENSOR: True
+  TOTENSOR: False
+  NORM: True
 
 OUTPUT:
   TYPE: 'image'
@@ -49,7 +50,7 @@ OUTPUT:
 DATASET:
   NAME: 'horse2zebra'
   TYPE: 'unaligned'
-  ROOT_DIR: '/mnt/disk3/quyi/data/horse2zebra'
+  ROOT_DIR: '/mnt/disk3/quyi/data/Flickr8k/dataset/5_caps_per_img_5_min_word_freq'
   MAX_SIZE: 'inf'
   
 DATALOADER:

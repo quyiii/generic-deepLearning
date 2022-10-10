@@ -58,6 +58,7 @@ _C.PROCESS.CROP_SIZE = [256, 256]
 _C.PROCESS.FLIP = True
 _C.PROCESS.FLIP_P = 0.5
 _C.PROCESS.TOTENSOR = True
+_C.PROCESS.NORM = True
 
 # -----------------------------------------------------------
 # OUTPUT
