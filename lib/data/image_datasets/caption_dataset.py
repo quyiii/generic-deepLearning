@@ -34,8 +34,8 @@ class CaptionDataset(BaseDataset):
         if self.transform is not None:
             img = self.transform(img)
         
-        caption = torch.LongTensor(self.captions[i])
-        caplen = torch.LongTensor([self.caplens[i]])
+        caption = torch.LongTensor(self.captions[index])
+        caplen = torch.LongTensor([self.caplens[index]])
 
         if self.split is 'TRAIN':
             return img, caption, caplen
