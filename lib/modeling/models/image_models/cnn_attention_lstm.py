@@ -1,3 +1,4 @@
+from json import encoder
 import torch
 import torch.nn as nn
 import torchvision
@@ -78,11 +79,17 @@ class DecoderWithAttention(nn.Module):
         self.dropout = dropout
 
         self.attention = Attention(encoder_dim, decoder_dim, attention_dim)
+        # it is a lookup tabel(查找表)
+        # it will init a tabel:weight (vocab_size, embed_dim) each word index i has weight[i] (embed_dim)
         self.embedding = nn.Embedding(vocab_size, embed_dim)
         self.dropout = None if self.dropout <= 0 else nn.Dropout(p=self.dropout)
+        # decoding LSTMCell
         self.decode_step = nn.LSTMCell(embed_dim + encoder_dim, decoder_dim, bias=True)
+        # linear layer to find initial hidden state of LSTMCell
         self.init_h = nn.Linear(encoder_dim, decoder_dim)
+        # linear layer to find initial cell state of LSTMCell
         self.init_c = nn.Linear(encoder_dim, decoder_dim)
+        # linear layer to create a sigmoid-activated gate
         self.f_beta = nn.Linear(decoder_dim, encoder_dim)
         self.sigmoid = nn.Sigmoid()
         self.fc = nn.Linear(decoder_dim, vocab_size)
@@ -127,4 +134,35 @@ class DecoderWithAttention(nn.Module):
         c = self.init_c(mean_encoder_out)
         return h, c
 
-    
+    def forward(self, encoder_out, encoded_captions, caption_lengths):
+        """
+        Forward propagation
+
+        :param encoder_out: encoded images (batch_size, enc_image_size, enc_image_size, encoder_dim)
+        :param encoded_captions: encoded captions (batch_size, max_caption_length)
+        :param caption_lengths: caption lengths (batch_size, 1)
+        :return: scores for vocabulary, sorted encoded captions, decode lengths, weights, sort indices
+        """
+        batch_size = encoder_out.size(0)
+        encoder_dim = encoder_out.size(-1)
+        vocab_size = self.vocab_size
+
+        # flatten image 
+        # (batch_size, encoded_image_size, encoded_image_size, encoder_dim) -> (batch_size, num_pixels, encoder_dim)
+        encoder_out = encoder_out.view(batch_size, -1, encoder_dim)
+        num_pixels = encoder_out.size(1)
+
+        # sort inut data by decreasing lengths
+        # sort return: sorted_value, sorted_index
+        # descending=True 降序排序 从大到小 descending=False 升序排序 从小到大
+        caption_lengths, sort_ind = caption_lengths.squeeze(1).sort(dim=0, descending=True)
+        encoder_out = encoder_out[sort_ind]
+        encoded_captions = encoded_captions[sort_ind]
+
+        # (batch_size, max_caption_lengths) -> (batch_size, max_caption_lengths, embedding_dim)
+        # each word i map embedding.weight[i] (embed_dim)
+        embeddings = self.embedding(encoded_captions)
+
+        h,c = self.init_hidden_state(encoder_out)
+
+
