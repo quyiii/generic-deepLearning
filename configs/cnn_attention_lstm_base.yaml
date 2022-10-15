@@ -16,7 +16,7 @@ MODEL:
     D: 3
 
 LOSS:
-  NAME: ['gan_loss', 'L1Loss']
+  NAME: ['CrossEntropyLoss']
   LAMBDA_A: 10
   LAMBDA_B: 10
   LAMBDA_IDENTITY: 0.5
@@ -43,7 +43,7 @@ PROCESS:
   NORM: True
 
 OUTPUT:
-  TYPE: 'image'
+  TYPE: 'word'
   CHANNEL: 3
   SIZE: [224, 224]
 
@@ -60,17 +60,17 @@ DATALOADER:
 
 SOLVER:
   OPTIM_NAME: "Adam"
-  OPTIM_BETA: 0.5
+  OPTIM_BETA: 'none'
   LR_SCHEDULER: 'linear'
-  BASE_LR: 0.0002
+  BASE_LR: 4e-4
   # lr_init_epoch + lr_decay_epoch = max_epoch
   LR_DECAY_EPOCH: 200
   LR_INIT_EPOCH: 200
   LR_DECAY_ITERS:  50
 
 TRAIN:
-  START_EPOCH: 1
-  MAX_EPOCH: 400
+  START_EPOCH: 0
+  MAX_EPOCH: 120
   ADD_EPOCH: 0
   IS_TRAIN: True
 

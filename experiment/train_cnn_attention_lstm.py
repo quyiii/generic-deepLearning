@@ -1,6 +1,7 @@
 import os
 import sys
 import pdb
+import json
 import torch
 import argparse
 from tqdm import tqdm
@@ -9,7 +10,7 @@ from torch.nn.utils.rnn import pack_padded_sequence
 sys.path.append('.')
 from lib.config import cfg
 from lib.util import creat_saver_writer
-from lib.solver import get_loss_class
+from lib.solver import get_loss_class, get_optim
 from lib.data import get_dataLoader
 from lib.evaluation import get_averageMeter
 from lib.data.image_datasets import tensorToPIL
@@ -51,13 +52,31 @@ class Trainer(object):
         self.attention_dim = 512
         self.decoder_dim = 512
         self.dropout = 0.5
+        self.device = torch.device("cuda:" + cfg.MODEL.DEVICE_IDS if cfg.MDOEL.DEVICE == 'cuda' else "cpu")
 
-        self.model = create_model(cfg)
-        if isinstance(self.model, torch.nn.DataParallel):
-            self.model = self.model.module
+        word_map_path = os.path.join(cfg.DATASET.ROOT_DIR, 'WORDMAP.json')
+        with open(word_map_path, 'r') as j:
+            self.word_map = json.load(j)
+        self.decoder = DecoderWithAttention(attention_dim=self.attention_dim,
+                                            embed_dim=self.embed_dim,
+                                            decoder_dim=self.decoder_dim,
+                                            vocab_size=len(self.word_map),
+                                            dropout=cfg.MODEL.DROPOUT)
+        # filter(function, iterable) function: 判断函数 iterable: 迭代器
+        self.decoder_optim = get_optim(cfg, filter(lambda p: p.requires_grad, self.decoder.parameters()))
+        
+        fine_tune_encoder = False
+        self.encoder = Encoder()
+        self.encoder.fine_tune(fine_tune_encoder)
+        self.encoder_optim = get_optim(cfg, filter(lambda p: p.requires_grad, self.encoder.parameters())) if fine_tune_encoder else None
+        self.decoder = self.decoder.to(self.device)
+        self.encoder = self.encoder.to(self.device)
 
-        self.dataloader = get_dataLoader(cfg)
-    
+        self.criterion = get_loss_class(cfg)
+
+        self.train_dataloader = get_dataLoader(cfg, 'train')
+        self.val_dataloader = get_dataLoader(cfg, 'val')
+
     def train(self, epoch):
         # tbar = tqdm(self.dataloader)
         for i, data in enumerate(self.dataloader):
