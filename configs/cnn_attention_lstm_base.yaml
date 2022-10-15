@@ -48,15 +48,15 @@ OUTPUT:
   SIZE: [224, 224]
 
 DATASET:
-  NAME: 'horse2zebra'
-  TYPE: 'unaligned'
+  NAME: 'flickr8k'
+  TYPE: 'caption'
   ROOT_DIR: '/mnt/disk3/quyi/data/Flickr8k/dataset/5_caps_per_img_5_min_word_freq'
   MAX_SIZE: 'inf'
   
 DATALOADER:
   SHUFFLE: True
   NUM_WORKERS: 4
-  BATCH_SIZE: 1
+  BATCH_SIZE: 32
 
 SOLVER:
   OPTIM_NAME: "Adam"

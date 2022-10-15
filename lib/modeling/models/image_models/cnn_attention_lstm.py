@@ -3,6 +3,8 @@ import torch
 import torch.nn as nn
 import torchvision
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 class Encoder(nn.Module):
     def __init__(self, enc_image_size=14):
         super(Encoder, self).__init__()
@@ -18,11 +20,11 @@ class Encoder(nn.Module):
         self.fine_tune()
 
     def forward(self, images):
-        # b 3 h w -> b 2048 h/32 w/32
+        # (b, 3, h, w) -> (b, 2048, h/32, w/32)
         out = self.resnet(images)
-        # -> b 2048 self.enc_iamge_size self.enc_image_size
+        # -> (b, 2048, self.enc_iamge_size, self.enc_image_size)
         out = self.adaptive_pool(out)
-        # -> b self.enc_image_size self.enc_image_size 2048
+        # -> (b, self.enc_image_size, self.enc_image_size, 2048)
         out = out.permute(0, 2, 3, 1)
         return out
 
@@ -48,9 +50,9 @@ class Attention(nn.Module):
         :param decoder_hidden: previous decoder output (batch_size decoder_dim)
         :return attention weighted encoding, weights
         """
-        # -> (batch_size, num_pixels, attention_dim)
+        # layer n encoded -> (batch_size, num_pixels, attention_dim)
         att1 = self.encoder_att(encoder_out)
-        # -> (batch_size, attention_dim)
+        # layer n-1 hidden -> (batch_size, attention_dim)
         att2 = self.decoder_att(decoder_hidden)
         # -> (batch_size, num_pixels)
         att = self.full_att(self.relu(att1 + att2.unsqueeze(1))).squeeze(2)
@@ -84,6 +86,9 @@ class DecoderWithAttention(nn.Module):
         self.embedding = nn.Embedding(vocab_size, embed_dim)
         self.dropout = None if self.dropout <= 0 else nn.Dropout(p=self.dropout)
         # decoding LSTMCell
+        # LSTMCell is just computation cell for one layer and one word
+        # it need compose and cycle to build layers and sequence
+        # input dim = embed_dim + encoder_dim because we need embed word and encoded image
         self.decode_step = nn.LSTMCell(embed_dim + encoder_dim, decoder_dim, bias=True)
         # linear layer to find initial hidden state of LSTMCell
         self.init_h = nn.Linear(encoder_dim, decoder_dim)
@@ -92,6 +97,7 @@ class DecoderWithAttention(nn.Module):
         # linear layer to create a sigmoid-activated gate
         self.f_beta = nn.Linear(decoder_dim, encoder_dim)
         self.sigmoid = nn.Sigmoid()
+        # from lstm output to word 
         self.fc = nn.Linear(decoder_dim, vocab_size)
         # initial some layers with values from the uniform distribution
         self.init_weights()
@@ -124,13 +130,14 @@ class DecoderWithAttention(nn.Module):
         Create the initial hidden and cell states for the decoder's LSTM based on the encoded image.
 
         :param encoder_out: encoded images (batch_size, num_pixels, encoder_dim)
-        :return hidden state, cell state
+        :return hidden state, cell state (batch_size, decoder_dim)
         """
-        # -> batch_size encoder_dim
+        # init has no weighted, so use mean
+        # -> (batch_size, encoder_dim)
         mean_encoder_out = encoder_out.mean(dim=1)
-        # -> b decoder_dim
+        # -> (batch_size ,decoder_dim)
         h = self.init_h(mean_encoder_out)
-        # -> b decoder_dim
+        # -> (batch_size ,decoder_dim)
         c = self.init_c(mean_encoder_out)
         return h, c
 
@@ -160,9 +167,34 @@ class DecoderWithAttention(nn.Module):
         encoded_captions = encoded_captions[sort_ind]
 
         # (batch_size, max_caption_lengths) -> (batch_size, max_caption_lengths, embedding_dim)
-        # each word i map embedding.weight[i] (embed_dim)
+        # embed captions: each word i map embedding.weight[i] (embed_dim)
         embeddings = self.embedding(encoded_captions)
 
+        # get init hidden state and cell state (batch_size, decoder_dim)
         h,c = self.init_hidden_state(encoder_out)
 
+        # do not decode <end>, so need caption_length - 1 steps 
+        decode_lengths = (caption_lengths - 1).tolist()
 
+        predictions = torch.zeros(batch_size, max(decode_lengths), vocab_size).to(device)
+        alphas = torch.zeros(batch_size, max(decode_lengths), num_pixels).to(device)
+
+        for t in range(max(decode_lengths)):
+            # decode_lengths is descending order, so [:batch_size_t]means need decode images
+            batch_size_t = sum([l > t for l in decode_lengths])
+            # attention_weighted_encoding: (batch_size_t, encoder_dim)
+            # alpha: (batch_size_t, num_pixels)
+            attention_weighted_encoding, alpha = self.attention(encoder_out[:batch_size_t], h[:batch_size_t])
+
+            # gate (batch_size_t, encoder_dim)
+            gate = self.sigmoid(self.f_beta(h[:batch_size_t]))
+            attention_weighted_encoding = gate * attention_weighted_encoding
+            # embeddings[:batch_size_t, t, :]: (batch_size_t, embed_dim)
+            # attention_weighted_encoding[:batch_size_t, :]: (batch_size_t, encoder_dim)
+            # torch.cat(up two): (batch_size, embed_dim, encoder_dim) 
+            h,c = self.decode_step(torch.cat([embeddings[:batch_size_t, t, :], attention_weighted_encoding], dim=1), (h[:batch_size_t], c[:batch_size_t]))
+            preds = self.fc(self.dropout(h) if self.dropout is not None else h)
+            predictions[:batch_size_t, t, :] = preds
+            alphas[:batch_size_t, t, :] = alpha
+    
+        return predictions, encoded_captions, decode_lengths, alphas, sort_ind
